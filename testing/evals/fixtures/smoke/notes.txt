@@ -1,0 +1,3 @@
+SABRE was an airline reservation system.
+It went live in the early 1960s for American Airlines.
+It handled booking at unprecedented scale for its era.
