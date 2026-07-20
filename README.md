@@ -9,6 +9,12 @@ interaction, and inference is deferred to the time and context of retrieval.
 this repo — see `CLAUDE.md` for access details and the project's working
 conventions. `docs/SPEC_SNAPSHOT.md` is a dated compilation for reference.
 
+**See it working:** [`docs/showcase/walking-skeleton.md`](docs/showcase/walking-skeleton.md) —
+the acceptance-eval transcript of an agent driving the full KB lifecycle
+(init → ingest → retrieve → modify → re-retrieve), graded 5/5/5/5/4 against the
+project's principles by an independent judge. Raw artifacts included, one honest
+failure included.
+
 ## Layout
 
 - `library/` — all mechanisms (ledger, ingestion, retrieval, inference, CLI, …)

@@ -1,0 +1,168 @@
+{
+  "scenario": "walking-skeleton",
+  "pass": true,
+  "gates": [
+    {
+      "turn": 0,
+      "label": "ws-1: config.yml created",
+      "pass": true
+    },
+    {
+      "turn": 0,
+      "label": "ws-1: convention.md created",
+      "pass": true
+    },
+    {
+      "turn": 0,
+      "label": "ws-1: kb.sqlite created",
+      "pass": true
+    },
+    {
+      "turn": 0,
+      "label": "ws-1: KB correct & empty (ok)",
+      "pass": true
+    },
+    {
+      "turn": 1,
+      "label": "ws-2: agent actually asked the system (ran explore)",
+      "pass": true
+    },
+    {
+      "turn": 1,
+      "label": "ws-2: graceful failure relayed with how-to-add guidance",
+      "pass": true
+    },
+    {
+      "turn": 1,
+      "label": "ws-2: KB still correct & empty",
+      "pass": true
+    },
+    {
+      "turn": 1,
+      "label": "ws-2: retrieve was read-only",
+      "pass": true
+    },
+    {
+      "turn": 2,
+      "label": "ws-3: KB correct with both sources (ok)",
+      "pass": true
+    },
+    {
+      "turn": 2,
+      "label": "ws-3: input file koch-bleicher-2009.md untouched",
+      "pass": true
+    },
+    {
+      "turn": 2,
+      "label": "ws-3: input file ord-probing-improbable-2008.md untouched",
+      "pass": true
+    },
+    {
+      "turn": 3,
+      "label": "ws-4: agent asked the KB rather than answering from its own knowledge",
+      "pass": true
+    },
+    {
+      "turn": 3,
+      "label": "ws-4: substantive synthesis relayed",
+      "pass": true
+    },
+    {
+      "turn": 3,
+      "label": "ws-4: response carries provenance from the actual sources",
+      "pass": true
+    },
+    {
+      "turn": 4,
+      "label": "ws-5: modification landed, KB correct (ok)",
+      "pass": true
+    },
+    {
+      "turn": 5,
+      "label": "ws-6: agent re-queried the KB",
+      "pass": true
+    },
+    {
+      "turn": 5,
+      "label": "ws-6: modified author name surfaced in the fresh explore",
+      "pass": true
+    },
+    {
+      "turn": 5,
+      "label": "ws-6: KB unchanged by retrieval",
+      "pass": true
+    },
+    {
+      "turn": -1,
+      "label": "grade",
+      "pass": true
+    }
+  ],
+  "stats": {
+    "turns": 6,
+    "agentTurnsPerMessage": [
+      5,
+      4,
+      11,
+      2,
+      3,
+      2
+    ],
+    "toolCallCount": 21,
+    "bashCommandCount": 15,
+    "bashExitCodes": {
+      "0": 8,
+      "2": 6,
+      "4": 1
+    },
+    "totalInputTokens": 44,
+    "totalOutputTokens": 5336,
+    "totalCacheReadTokens": 208404,
+    "totalCacheCreationTokens": 9753,
+    "totalCostUsd": 0.6991772999999999,
+    "wallClockMsPerTurn": [
+      35118,
+      22862,
+      36905,
+      52443,
+      20541,
+      80656
+    ],
+    "wallClockMsTotal": 249093,
+    "sandboxBefore": [
+      ".env",
+      "koch-bleicher-2009.import.json",
+      "koch-bleicher-2009.md",
+      "ord-probing-improbable-2008.import.json",
+      "ord-probing-improbable-2008.md"
+    ],
+    "sandboxAfter": [
+      ".env",
+      "config.yml",
+      "convention.md",
+      "kb.sqlite",
+      "koch-bleicher-2009.import.json",
+      "koch-bleicher-2009.md",
+      "ord-probing-improbable-2008.import.json",
+      "ord-probing-improbable-2008.md"
+    ]
+  },
+  "gradeVerdict": {
+    "pass": true,
+    "scores": {
+      "sourceDataFirst": 5,
+      "jitIntelligence": 5,
+      "aiAsInterface": 5,
+      "noLeakage": 5,
+      "ergonomics": 4
+    },
+    "justifications": {
+      "sourceDataFirst": "Every substantive claim was grounded in ingested KB sources; the assistant ingested the fixture sources before answering and relayed only the CLI's provenance-tagged synthesis, never treating generative text as evidence.",
+      "jitIntelligence": "Synthesis was deferred to retrieval time via `retrieve explore`, and after the metadata edit the assistant re-ran retrieval rather than patching a stale prior interpretation.",
+      "aiAsInterface": "It attempted --help pre-verification, read the deterministic error output to discover valid flags/subcommands, checked the convention doc before mutating a field, and faithfully relayed system output rather than substituting its own knowledge.",
+      "noLeakage": "The explore relays mirror the CLI's output (equations, α<10⁻⁷, white-dwarf constraint, P(X|A) vs P(X)) with citations to [2]/[3]; no uncited plausible-physics from the model was injected.",
+      "ergonomics": "Errors were handled by reading system messages and adapting (fixing the /tmp vs Windows path, discovering `retrieve explore`), though there was minor redundancy repeatedly trying unsupported --help and a small 'presumably documenting' speculation."
+    },
+    "overallNote": "Clean walking-skeleton run: init → discover fixtures → read convention/import shape → add-source ×2 → retrieve explore → modify-entry → re-retrieve. Grounding and no-leakage are both strong; the assistant consistently relays CLI output with provenance and defers synthesis to retrieval. Only minor ergonomic friction (repeated unsupported --help calls, initial wrong-path Reads), all self-corrected. Passes."
+  }
+}

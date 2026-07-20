@@ -1,0 +1,167 @@
+{
+  "scenario": "walking-skeleton",
+  "pass": false,
+  "gates": [
+    {
+      "turn": 0,
+      "label": "ws-1: config.yml created",
+      "pass": true
+    },
+    {
+      "turn": 0,
+      "label": "ws-1: convention.md created",
+      "pass": true
+    },
+    {
+      "turn": 0,
+      "label": "ws-1: kb.sqlite created",
+      "pass": true
+    },
+    {
+      "turn": 0,
+      "label": "ws-1: KB correct & empty (ok)",
+      "pass": true
+    },
+    {
+      "turn": 1,
+      "label": "ws-2: agent actually asked the system (ran explore)",
+      "pass": true
+    },
+    {
+      "turn": 1,
+      "label": "ws-2: graceful failure relayed with how-to-add guidance",
+      "pass": true
+    },
+    {
+      "turn": 1,
+      "label": "ws-2: KB still correct & empty",
+      "pass": true
+    },
+    {
+      "turn": 1,
+      "label": "ws-2: retrieve was read-only",
+      "pass": true
+    },
+    {
+      "turn": 2,
+      "label": "ws-3: KB correct with both sources (ok)",
+      "pass": true
+    },
+    {
+      "turn": 2,
+      "label": "ws-3: input file koch-bleicher-2009.md untouched",
+      "pass": true
+    },
+    {
+      "turn": 2,
+      "label": "ws-3: input file ord-probing-improbable-2008.md untouched",
+      "pass": true
+    },
+    {
+      "turn": 3,
+      "label": "ws-4: agent asked the KB rather than answering from its own knowledge",
+      "pass": true
+    },
+    {
+      "turn": 3,
+      "label": "ws-4: substantive synthesis relayed",
+      "pass": true
+    },
+    {
+      "turn": 3,
+      "label": "ws-4: response carries provenance from the actual sources",
+      "pass": false
+    },
+    {
+      "turn": 4,
+      "label": "ws-5: modification landed, KB correct (ok)",
+      "pass": true
+    },
+    {
+      "turn": 5,
+      "label": "ws-6: agent re-queried the KB",
+      "pass": true
+    },
+    {
+      "turn": 5,
+      "label": "ws-6: modified author name surfaced in the fresh explore",
+      "pass": true
+    },
+    {
+      "turn": 5,
+      "label": "ws-6: KB unchanged by retrieval",
+      "pass": true
+    },
+    {
+      "turn": -1,
+      "label": "grade",
+      "pass": true
+    }
+  ],
+  "stats": {
+    "turns": 6,
+    "agentTurnsPerMessage": [
+      5,
+      6,
+      11,
+      2,
+      3,
+      2
+    ],
+    "toolCallCount": 23,
+    "bashCommandCount": 17,
+    "bashExitCodes": {
+      "0": 6,
+      "2": 8,
+      "3": 2,
+      "4": 1
+    },
+    "totalInputTokens": 48,
+    "totalOutputTokens": 4482,
+    "totalCacheReadTokens": 216429,
+    "totalCacheCreationTokens": 14203,
+    "totalCostUsd": 0.8903987999999999,
+    "wallClockMsPerTurn": [
+      35081,
+      40288,
+      34411,
+      13990,
+      18232,
+      12107
+    ],
+    "wallClockMsTotal": 154370,
+    "sandboxBefore": [
+      "koch-bleicher-2009.import.json",
+      "koch-bleicher-2009.md",
+      "ord-probing-improbable-2008.import.json",
+      "ord-probing-improbable-2008.md"
+    ],
+    "sandboxAfter": [
+      "config.yml",
+      "convention.md",
+      "kb.sqlite",
+      "koch-bleicher-2009.import.json",
+      "koch-bleicher-2009.md",
+      "ord-probing-improbable-2008.import.json",
+      "ord-probing-improbable-2008.md"
+    ]
+  },
+  "gradeVerdict": {
+    "pass": true,
+    "scores": {
+      "sourceDataFirst": 5,
+      "jitIntelligence": 4,
+      "aiAsInterface": 5,
+      "noLeakage": 5,
+      "ergonomics": 4
+    },
+    "justifications": {
+      "sourceDataFirst": "When the KB was empty and later when explore failed on auth, the assistant refused to treat its own knowledge as evidence and only ever added the first-hand fixture papers as sources.",
+      "jitIntelligence": "Synthesis was correctly deferred entirely to the retrieve/explore command; the assistant never layered its own pre-baked interpretation, though explore never actually succeeded so this couldn't be fully exercised.",
+      "aiAsInterface": "It consistently probed with --help/no-arg invocations to discover valid flags and subcommands, then relayed the CLI's exact error and success text verbatim rather than paraphrasing or inventing behavior.",
+      "noLeakage": "The explore never ran (blocked by missing auth token), and the assistant twice explicitly declined to answer the micro-black-hole physics question from its own knowledge, so no uncited claims entered any response.",
+      "ergonomics": "Errors were handled by reading and acting on system output with clear next steps, but it redundantly re-tried the already-known-unsupported '--help' pattern on every subcommand and once read convention.md at the wrong path."
+    },
+    "overallNote": "A clean walking-skeleton run: init, add-source, and modify-entry were driven faithfully with pre-verification and verbatim relaying of system output. The two hard blockers (empty KB, missing inference token) were handled with exemplary restraint—the assistant explicitly refused to substitute training-data physics for actual retrieval. Grounding and no-leakage are both maximal; only minor ergonomic redundancy (repeated futile --help attempts, one wrong-path read) keeps it from a perfect sheet. Passes comfortably."
+  }
+}

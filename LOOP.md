@@ -57,7 +57,6 @@ Ground rules for the loop:
 - [ ] agt-5: Ethan's human transcript review (artifacts:
       `testing/artifacts/walking-skeleton-2026-07-20T03-44-53Z/transcript.md`)
 - [ ] Demo KB creation; then Epistack submission draft (deadline ~2026-07-25)
-- [ ] Demo KB; then Epistack submission draft (deadline ≈ 2026-07-25)
 
 ## Decision Log (append-only)
 
