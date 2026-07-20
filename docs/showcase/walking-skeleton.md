@@ -1,29 +1,22 @@
-# Showcase — the walking-skeleton acceptance eval
+# The walking-skeleton eval — full walkthrough
 
-This is a tidied presentation of the eval run that closed out v0.2.1. The raw,
-unedited artifacts (machine transcript, gate results, judge verdict, stats) are
-in [`./unedited/`](./unedited/) exactly as the harness wrote them; nothing here
-is paraphrased beyond formatting — every user and assistant message below is
-verbatim from the run.
+*New here? Start with [the overview](./README.md) for what this is and the
+moments that matter most.*
 
-**What this is:** a single Claude agent (Sonnet) is dropped into a sandbox
-containing the Epistack CLI and two source documents, with no prior knowledge
-of the tool. Over six scripted user turns it must initialize a knowledge base,
-handle an empty-KB query gracefully, ingest the sources, answer a substantive
-question with provenance, modify metadata non-destructively, and answer again
-fresh. Deterministic gates check the KB's actual state between turns; an
-independent judge (Opus) then grades the whole transcript against the
-project's core principles.
+This is a tidied presentation of run 2 (2026-07-19), the passing run that
+closed out v0.2.1: a single Claude agent (Sonnet), with no prior knowledge of
+the tool, driving the full KB lifecycle over six scripted user turns, with
+deterministic gates between turns and an independent judge (Opus) grading the
+transcript against the project's core principles. Nothing here is paraphrased
+beyond formatting — **every user and assistant message below is verbatim from
+the run**; the raw artifacts are in [`./unedited/`](./unedited/) exactly as
+the harness wrote them.
 
-**Result (run 2, 2026-07-19): 18/18 gates pass · judge verdict pass · $0.70 · 249 s**
-
-| Principle | Score | Judge's justification (verbatim) |
-|---|---|---|
-| Source Data First | 5/5 | "Every substantive claim was grounded in ingested KB sources; the assistant ingested the fixture sources before answering and relayed only the CLI's provenance-tagged synthesis, never treating generative text as evidence." |
-| JiT Intelligence | 5/5 | "Synthesis was deferred to retrieval time via `retrieve explore`, and after the metadata edit the assistant re-ran retrieval rather than patching a stale prior interpretation." |
-| AI as Interface | 5/5 | "It attempted --help pre-verification, read the deterministic error output to discover valid flags/subcommands, checked the convention doc before mutating a field, and faithfully relayed system output rather than substituting its own knowledge." |
-| No training-data leakage | 5/5 | "The explore relays mirror the CLI's output (equations, α<10⁻⁷, white-dwarf constraint, P(X\|A) vs P(X)) with citations to [2]/[3]; no uncited plausible-physics from the model was injected." |
-| Ergonomics | 4/5 | "Errors were handled by reading system messages and adapting… though there was minor redundancy repeatedly trying unsupported --help and a small 'presumably documenting' speculation." |
+**Result: 18/18 gates pass · judge verdict pass ·
+sourceDataFirst 5, jitIntelligence 5, aiAsInterface 5, noLeakage 5, ergonomics 4 ·
+$0.70 · 249 s.** The judge's verbatim justifications are in
+[the overview](./README.md) and
+[`unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json`](./unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json).
 
 ---
 

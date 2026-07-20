@@ -1,0 +1,89 @@
+# Showcase — an agent drives the knowledge base, end to end
+
+The eval that closed out v0.2.1: a Claude agent with **no prior knowledge of
+this tool** is dropped into a sandbox with the Epistack CLI and two source
+papers on LHC micro-black-hole safety. Over six user turns it must initialize
+a knowledge base, handle an empty-KB query gracefully, ingest the sources,
+answer a substantive physics question with provenance, modify metadata
+non-destructively, and answer again fresh. Deterministic gates verify the
+KB's actual state between turns; an independent judge (Opus) grades the
+transcript against the project's principles.
+
+**Result: 18/18 gates pass · judge verdict pass · $0.70 · 4 minutes.**
+
+Two layers below this page, matching the project's own ethos — interpretation
+on top, source data preserved underneath:
+**[the full walkthrough](./walking-skeleton.md)** (every message verbatim,
+with context) and **[the unedited artifacts](./unedited/)** (machine
+transcripts, gate results, judge verdicts, stats — exactly as the harness
+wrote them, one passing run and one failing run).
+
+## The moments worth your ninety seconds
+
+### 1. Values held under failure
+
+The first run *failed* — an eval-environment bug kept the auth token from the
+sandboxed engine, so every retrieval died with exit 3. Facing a physics
+question it could easily have answered from training data, the agent said:
+
+> I don't want to substitute my own outside knowledge for what the knowledge base would actually retrieve from those two sources — so I'll hold off on answering the substantive question until `retrieve` can actually run.
+
+Source Data First isn't a slogan in a spec; it's what the system did when the
+easy path was fabrication. The failing run is preserved unedited alongside
+the pass.
+
+### 2. Fresh inference, not stale interpretation
+
+After a metadata edit, the user re-asked the original question. The agent
+**re-ran retrieval rather than patching its earlier answer** — and because
+every explore is a live inference over the full sources at retrieval time
+(no cached embeddings, no stored interpretations), the fresh synthesis even
+differs in emphasis from the first. The judge singled this out:
+
+> Synthesis was deferred to retrieval time via `retrieve explore`, and after the metadata edit the assistant re-ran retrieval rather than patching a stale prior interpretation.
+
+That is Just-in-Time Intelligence — the system's answer to the failure mode
+of AI interpretations stacked on interpretations.
+
+### 3. A CLI that teaches its own grammar
+
+The agent was given no documentation. It learned the entire interface from
+the CLI's error messages, which are written for exactly this:
+
+> ```
+> Exit code 2
+> error: unknown subcommand 'micro black holes at the LHC' for 'retrieve'
+> next: use: retrieve <explore> …
+> ```
+
+Every non-zero exit says what to do next. Fifteen bash commands, and the
+six "failures" among them were all successful discovery — this is what
+"AI agents as first-class interface citizens" looks like in practice.
+
+### 4. Provenance that survives change
+
+The user corrected an author line; the ledger recorded it as a
+retract-and-assert in a new transaction — the prior value is retained in the
+append-only log forever — and the very next retrieval's provenance carried
+the corrected attribution. Between turns, gates verified the source files
+were byte-identical to before ingestion and the full ledger history was
+intact. Durability is checked, not assumed.
+
+## The judge's scorecard
+
+| Principle | Score |
+|---|---|
+| Source Data First | 5/5 |
+| Just-in-Time Intelligence | 5/5 |
+| AI as Interface | 5/5 |
+| No training-data leakage | 5/5 |
+| Ergonomics | 4/5 |
+
+> Clean walking-skeleton run: init → discover fixtures → read convention/import shape → add-source ×2 → retrieve explore → modify-entry → re-retrieve. Grounding and no-leakage are both strong; the assistant consistently relays CLI output with provenance and defers synthesis to retrieval. Only minor ergonomic friction (repeated unsupported --help calls, initial wrong-path Reads), all self-corrected. Passes.
+
+Full justifications, per-gate results, and cost/token stats are in
+[`unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json`](./unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json).
+
+---
+
+**Next:** [the full walkthrough, every message verbatim →](./walking-skeleton.md)
