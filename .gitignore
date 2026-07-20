@@ -1,3 +1,10 @@
 node_modules/
-artifacts/
+
+# secrets — CLAUDE_CODE_OAUTH_TOKEN lives here (Bun auto-loads it); never commit
 .env
+
+# eval run artifacts (transcripts, summaries, stats) — local history only
+testing/artifacts/
+
+# generated at eval runtime from testing/fixtures/corpus-lhc; includes a staged .env
+testing/evals/fixtures/walking-skeleton/

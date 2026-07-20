@@ -1,0 +1,10 @@
+{
+  "content_path": "ibm-sabre.md",
+  "metadata": {
+    "title": "Sabre",
+    "author": "IBM Heritage",
+    "origin": "https://www.ibm.com/history/sabre",
+    "contributor": "fixture-corpus",
+    "justification": "Canonical fixture: SABRE/CRS history corpus for DKB tests."
+  }
+}

@@ -187,3 +187,17 @@ Observed message order for a 2-turn streaming-input session:
 - Transcript-grading rubric content (runtime only provides the `grade()` slot + `judge()` helper)
 - Cost/cadence tagging taxonomy for test cases
 - pass@k / trial repetition (post-v0.2; runtime's single-run contract keeps the door open)
+
+## Progress & partial artifacts (added 2026-07-19, post first ws run)
+
+Motivated by the first walking-skeleton run being a ~4-minute black box (and a
+timed-out run would have left zero artifacts):
+
+- The runtime prints per-turn progress to **stderr** (`[<scenario>] turn i/N done
+  in Xs — gates: … — $… so far`, plus run-start and grading lines); stdout still
+  carries only the final report.
+- The artifacts dir is created at run start; after every completed turn the
+  transcript (json+md) and a `summary.json` with `partial: true` are flushed to
+  it (`writePartialArtifacts` in report.ts). The final `writeArtifacts` overwrites
+  them into the finished form, so a `partial: true` summary on disk always means
+  the run died before completing.

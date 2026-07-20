@@ -54,7 +54,7 @@ Entities (each specced at *platonic* / *v0.2.1* / *v0.2.2* levels in the spec):
 - **library** — this repo; defines all mechanisms in TypeScript.
 - **engine** — a program using the library; owns and drives all operations over a knowledge base; consults the inference handler; defines the CLI as its sole point of input.
 - **knowledge base** — the data store; only ever operated on by the engine. v0.2: SQLite as an append-only transactional log of EAV structure (Datomic-style) — no UPDATE/DELETE; current state is a view over the log.
-- **inference handler** — owns the agentic machinery and formalizes the contracts for using Agents inside the program (providers, interfaces, return formats). It *generates* the dependent code from one place of configuration. v0.2.1: supports subagents via Claude plugin only — i.e. it generates a functional Claude plugin that the user installs.
+- **inference handler** — owns the agentic machinery and formalizes the contracts for using Agents inside the program (providers, interfaces, return formats). It *generates* the dependent code from one place of configuration. v0.2.1: supports subagents via Agent-SDK only (assumes the user is logged into Claude Code on the same system; proper feedback if the token is absent). Plugin generation is post-v0.2.
 - **convention** — the live, evolving set of best practices around attributes/metadata (not a rigid schema). Attributes are hand-holds for AI searching the graph.
 - **interfaces** — two, both first-class:
   - **CLI** — AI-legible: intuitive exit codes, `--json` mode, errors that say what to do next, an access path through the plugin interface. Technically human-usable but agentic interaction is baked into the concept.
@@ -97,6 +97,38 @@ The spec's "Testing & Evaluation" section is authoritative; highlights:
 - Run with Bun (e.g. `bun testing/evals/eval_smoke.ts`, or `bun run eval:smoke`). Auth: `CLAUDE_CODE_OAUTH_TOKEN` in repo `.env` (Bun auto-loads it).
 - Every run writes artifacts (transcript, summary, stats) to `testing/artifacts/` (gitignored).
 - Gates needing exit codes use `ctx.exec()` — the SDK doesn't expose Bash exit codes, and CLI-as-subprocess is the spec-correct approach anyway.
+
+## Build-loop infrastructure (the orchestrator's lifelines)
+
+The orchestrator is amnesiac by design — context gets compressed or cleared. Only
+disk and executables are trustworthy. Four artifacts carry the loop:
+
+1. **`docs/CONTRACTS.md`** — the blessed interface decisions (CLI grammar, exit codes,
+   schemas, artifact layout). Tests derive from it; implementations move to meet
+   tests, never the reverse. Amending a blessed contract requires Ethan's sign-off
+   and a dated amendment note.
+2. **`testing/tests/`** — the phase-1 logic suite (`bun test testing/tests/`). **The
+   suite IS the project status**; run it before trusting any prose about progress.
+   Tests are immutable once blessed; if one seems wrong, consult Ethan — never edit
+   to green.
+3. **`LOOP.md`** — the orchestrator state ledger: bootstrap read-order, current
+   phase, task queue, append-only decision & session logs. Fresh instances start
+   there; every session appends before ending.
+4. **`docs/SPEC_SNAPSHOT.md`** — dated compilation of the Logseq spec for subagent
+   briefs (the graph remains source of truth; refresh on drift).
+
+Loop protocol: run suite → pick reddest failure whose dependencies are green (build
+order: errors → ledger → convention → ingestion → synthesis → retrieval → cli →
+engine) → dispatch one subagent per component/failure-cluster, briefed with specific
+CONTRACTS.md sections → verify red-to-green with no regressions and failures that
+migrate for the right reason → append to LOOP.md → repeat.
+
+Subagent-driven development is deliberate **token economy**, not just delegation:
+the orchestrator's context is the scarce resource. Subagents read the contracts,
+spec excerpts, and failing tests from disk themselves (briefs cite paths + section
+names, never paste file bodies) and burn their own context iterating; they return
+only a compact report (what changed, suite state, deviations). The orchestrator
+never reads implementation code it doesn't have to — it trusts the suite.
 
 ## Working conventions for agents
 

@@ -8,7 +8,7 @@ import { mkdtemp, mkdir, cp, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { Transcript } from "./transcript";
-import { writeArtifacts, printReport } from "./report";
+import { writeArtifacts, writePartialArtifacts, createArtifactsDir, printReport } from "./report";
 import type {
   GateContext,
   GateResult,
@@ -94,6 +94,12 @@ export async function runScenario(def: ScenarioDefinition): Promise<ScenarioResu
   }
   const sandboxBefore = await snapshotDir(sandbox);
 
+  // Progress goes to stderr so it never pollutes stdout consumers; artifacts
+  // dir exists from the start so every partial flush has a home.
+  const artifactsDir = await createArtifactsDir(def.name);
+  const progress = (line: string) => console.error(`[${def.name}] ${line}`);
+  progress(`run started — ${def.turns.length} turns, artifacts: ${artifactsDir}`);
+
   const abort = new AbortController();
   const timeoutMs = def.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const timer = setTimeout(() => abort.abort(new Error(`scenario timeout after ${timeoutMs} ms`)), timeoutMs);
@@ -172,6 +178,14 @@ export async function runScenario(def: ScenarioDefinition): Promise<ScenarioResu
           halted = true; // budget/turn-cap errors end the session anyway
         }
 
+        const turnGates = gates.filter((g) => g.turn === turnIndex);
+        const nFail = turnGates.filter((g) => !g.pass).length;
+        const costSoFar = transcript.turns.reduce((c, t) => c + t.costUsd, 0);
+        progress(
+          `turn ${turnIndex + 1}/${def.turns.length} done in ${((Date.now() - turnStartedAt) / 1000).toFixed(1)}s — gates: ${turnGates.length - nFail} pass${nFail ? `, ${nFail} FAIL` : ""} — $${costSoFar.toFixed(2)} so far`,
+        );
+        await writePartialArtifacts(artifactsDir, def.name, transcript.messages, transcript.turns, gates);
+
         turnIndex++;
         if (!halted && turnIndex < def.turns.length) {
           transcript.beginTurn();
@@ -196,8 +210,10 @@ export async function runScenario(def: ScenarioDefinition): Promise<ScenarioResu
   let gradeVerdict;
   if (def.grade && !fatalError) {
     try {
+      progress("grading transcript…");
       gradeVerdict = await def.grade(transcript.messages);
       gates.push({ turn: -1, label: "grade", pass: gradeVerdict.pass });
+      progress(`grade: ${gradeVerdict.pass ? "pass" : "FAIL"}`);
     } catch (e) {
       gates.push({ turn: -1, label: `grade threw: ${e instanceof Error ? e.message : String(e)}`, pass: false });
     }
@@ -215,7 +231,7 @@ export async function runScenario(def: ScenarioDefinition): Promise<ScenarioResu
     gradeVerdict,
     error: fatalError,
   };
-  result.artifactsDir = await writeArtifacts(def.name, result);
+  result.artifactsDir = await writeArtifacts(def.name, result, artifactsDir);
   printReport(def.name, result);
   return result;
 }

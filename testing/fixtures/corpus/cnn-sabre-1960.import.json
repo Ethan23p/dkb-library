@@ -1,0 +1,10 @@
+{
+  "content_path": "cnn-sabre-1960.md",
+  "metadata": {
+    "title": "1960: Sabre takes off",
+    "author": "Leslie Goff",
+    "origin": "https://www.cnn.com/TECH/computing/9906/29/1960.idg/index.html",
+    "contributor": "fixture-corpus",
+    "justification": "Canonical fixture: SABRE/CRS history corpus for DKB tests."
+  }
+}

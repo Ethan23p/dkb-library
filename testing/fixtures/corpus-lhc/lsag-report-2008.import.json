@@ -1,0 +1,10 @@
+{
+  "content_path": "lsag-report-2008.md",
+  "metadata": {
+    "title": "Review of the Safety of LHC Collisions",
+    "author": "John Ellis, Gian Giudice, Michelangelo Mangano, Igor Tkachev, Urs Wiedemann",
+    "origin": "https://arxiv.org/abs/0806.3414",
+    "contributor": "fixture-corpus",
+    "justification": "Canonical LHC case-study fixture: micro black hole safety literature for the Epistack demo KB."
+  }
+}

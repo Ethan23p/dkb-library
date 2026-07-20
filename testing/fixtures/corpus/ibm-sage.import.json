@@ -1,0 +1,10 @@
+{
+  "content_path": "ibm-sage.md",
+  "metadata": {
+    "title": "SAGE",
+    "author": "IBM Heritage",
+    "origin": "https://www.ibm.com/history/sage",
+    "contributor": "fixture-corpus",
+    "justification": "Canonical fixture: SABRE/CRS history corpus for DKB tests."
+  }
+}

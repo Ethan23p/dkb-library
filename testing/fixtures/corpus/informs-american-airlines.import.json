@@ -1,0 +1,10 @@
+{
+  "content_path": "informs-american-airlines.md",
+  "metadata": {
+    "title": "History of OR/MS at American Airlines: Revenue Management, Crew Planning, Capacity Planning, and Aircraft Maintenance",
+    "author": "INFORMS (compiled by Reed Devany, edited by Linus Schrage)",
+    "origin": "https://www.informs.org/Explore/History-of-O.R.-Excellence/Non-Academic-Institutions/American-Airlines",
+    "contributor": "fixture-corpus",
+    "justification": "Canonical fixture: SABRE/CRS history corpus for DKB tests."
+  }
+}

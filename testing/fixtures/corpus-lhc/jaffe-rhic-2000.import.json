@@ -1,0 +1,10 @@
+{
+  "content_path": "jaffe-rhic-2000.md",
+  "metadata": {
+    "title": "Review of Speculative \"Disaster Scenarios\" at RHIC",
+    "author": "R.L. Jaffe, W. Busza, J. Sandweiss, F. Wilczek",
+    "origin": "https://arxiv.org/abs/hep-ph/9910333",
+    "contributor": "fixture-corpus",
+    "justification": "Canonical LHC case-study fixture: micro black hole safety literature for the Epistack demo KB."
+  }
+}

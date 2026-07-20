@@ -1,0 +1,10 @@
+{
+  "content_path": "koch-bleicher-2009.md",
+  "metadata": {
+    "title": "Exclusion of black hole disaster scenarios at the LHC",
+    "author": "Benjamin Koch, Marcus Bleicher, Horst Stöcker",
+    "origin": "https://arxiv.org/abs/0807.3349",
+    "contributor": "fixture-corpus",
+    "justification": "Canonical LHC case-study fixture: micro black hole safety literature for the Epistack demo KB."
+  }
+}

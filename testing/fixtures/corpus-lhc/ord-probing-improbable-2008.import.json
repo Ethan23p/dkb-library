@@ -1,0 +1,10 @@
+{
+  "content_path": "ord-probing-improbable-2008.md",
+  "metadata": {
+    "title": "Probing the Improbable: Methodological Challenges for Risks with Low Probabilities and High Stakes",
+    "author": "Toby Ord, Rafaela Hillerbrand, Anders Sandberg",
+    "origin": "https://arxiv.org/abs/0810.5515",
+    "contributor": "fixture-corpus",
+    "justification": "Canonical LHC case-study fixture: micro black hole safety literature for the Epistack demo KB."
+  }
+}
