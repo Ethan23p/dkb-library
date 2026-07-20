@@ -1,13 +1,14 @@
 # Showcase — an agent drives the knowledge base, end to end
 
-The eval that closed out v0.2.1: a Claude agent with **no prior knowledge of
-this tool** is dropped into a sandbox with the Epistack CLI and two source
-papers on LHC micro-black-hole safety. Over six user turns it must initialize
-a knowledge base, handle an empty-KB query gracefully, ingest the sources,
-answer a substantive physics question with provenance, modify metadata
-non-destructively, and answer again fresh. Deterministic gates verify the
-KB's actual state between turns; an independent judge (Opus) grades the
-transcript against the project's principles.
+The acceptance eval for the current version: a Claude agent with **no prior
+knowledge of this tool** is dropped into a sandbox with the Epistack CLI and
+two source papers on LHC micro-black-hole safety. Over six user turns it must
+initialize a knowledge base, handle a query while the KB is still empty,
+ingest the sources, answer a substantive physics question with provenance,
+correct a piece of metadata, and answer again fresh. Automated checks
+("gates") verify the knowledge base's actual state between turns; an
+independent judge (Opus) grades the transcript against the project's
+principles.
 
 **Result: 18/18 gates pass · judge verdict pass · $0.70 · 4 minutes.**
 
@@ -62,12 +63,12 @@ six "failures" among them were all successful discovery — this is what
 
 ### 4. Provenance that survives change
 
-The user corrected an author line; the ledger recorded it as a
-retract-and-assert in a new transaction — the prior value is retained in the
-append-only log forever — and the very next retrieval's provenance carried
-the corrected attribution. Between turns, gates verified the source files
-were byte-identical to before ingestion and the full ledger history was
-intact. Durability is checked, not assumed.
+The user corrected an author line; the ledger recorded the change as a new
+entry rather than overwriting the old one — the prior value stays in the log
+forever — and the very next retrieval's provenance carried the corrected
+attribution. Between turns, gates verified the source files were
+byte-identical to before ingestion and the full ledger history was intact.
+Durability is checked, not assumed.
 
 ## The judge's scorecard
 

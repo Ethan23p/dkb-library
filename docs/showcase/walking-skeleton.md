@@ -3,14 +3,14 @@
 *New here? Start with [the overview](./README.md) for what this is and the
 moments that matter most.*
 
-This is a tidied presentation of run 2 (2026-07-19), the passing run that
-closed out v0.2.1: a single Claude agent (Sonnet), with no prior knowledge of
-the tool, driving the full KB lifecycle over six scripted user turns, with
-deterministic gates between turns and an independent judge (Opus) grading the
-transcript against the project's core principles. Nothing here is paraphrased
-beyond formatting — **every user and assistant message below is verbatim from
-the run**; the raw artifacts are in [`./unedited/`](./unedited/) exactly as
-the harness wrote them.
+This is a tidied presentation of the passing run (run 2, 2026-07-19): a
+single Claude agent (Sonnet), with no prior knowledge of the tool, driving
+the full knowledge-base lifecycle over six scripted user turns, with
+automated checks ("gates") between turns and an independent judge (Opus)
+grading the transcript against the project's core principles. Nothing here is
+paraphrased beyond formatting — **every user and assistant message below is
+verbatim from the run**; the raw artifacts are in
+[`./unedited/`](./unedited/) exactly as the harness wrote them.
 
 **Result: 18/18 gates pass · judge verdict pass ·
 sourceDataFirst 5, jitIntelligence 5, aiAsInterface 5, noLeakage 5, ergonomics 4 ·
@@ -71,8 +71,8 @@ system's answer instead of answering the physics question itself**:
 The agent lists the directory, reads `convention.md` and both import
 descriptors to check they're well-formed, then ingests both papers (Koch,
 Bleicher & Stöcker's *Exclusion of black hole disaster scenarios at the LHC*
-and Ord, Hillerbrand & Sandberg's *Probing the Improbable*). Each ingestion is
-one append-only transaction carrying a content hash.
+and Ord, Hillerbrand & Sandberg's *Probing the Improbable*). Each ingestion
+lands as one ledger transaction carrying a content hash.
 
 > **Assistant:** Both descriptors look well-formed against the convention. Adding them now.
 > Both sources are now in the knowledge base:
@@ -90,10 +90,10 @@ one append-only transaction carrying a content hash.
 
 > **User:** If a micro black hole formed at the LHC and did not evaporate, how fast would it actually grow — and is 'slow enough not to matter for billions of years' the same thing as 'safe'?
 
-One command: `retrieve explore "<the question>"`. The engine context-stuffs
-the full sources into a fresh inference call *at retrieval time* — no
-pre-computed embeddings or cached interpretations — and returns a synthesis
-with coverage (`partial`) and provenance. The agent relays it:
+One command: `retrieve explore "<the question>"`. The engine reads the full
+sources into a fresh inference call *at retrieval time* — no pre-computed
+embeddings or cached interpretations — and returns a synthesis with a
+coverage rating (`partial`) and provenance. The agent relays it:
 
 > **Assistant:** Here's what the knowledge base says (coverage: **partial**):
 >
@@ -118,9 +118,8 @@ with coverage (`partial`) and provenance. The agent relays it:
 > **User:** Small correction: the author line on the black-hole-exclusion paper should read exactly "B. Koch, M. Bleicher & H. Stöcker (FIAS)". Please update that metadata.
 
 The agent checks the convention to confirm `source/author` is mutable, then
-runs `modify-entry`. The ledger is append-only: the modification is a
-retract-plus-assert in one new transaction, and the prior value stays in the
-log forever.
+runs `modify-entry`. The ledger never overwrites: the change is recorded as
+one new transaction, and the prior value stays in the log forever.
 
 > **Assistant:** That paper is entry `2`, and per the convention, `source/author` is mutable. I'll update it.
 > Done — entry 2's author updated:
@@ -177,11 +176,11 @@ corrected author line:
 
 Run 2 was preceded by a failing run — kept unedited in
 [`./unedited/run-1-fail-2026-07-20T03-37-37Z/`](./unedited/run-1-fail-2026-07-20T03-37-37Z/) —
-where an eval-environment bug (the auth token never reached the sandboxed
-engine) made every `retrieve explore` fail with exit 3. The engine behaved
-contract-correctly in a broken environment, and the in-loop agent held the
-project's values under failure. Facing a physics question it could easily have
-answered from training data, it said:
+where a bug in the eval environment (the auth token never reached the
+sandboxed engine) made every `retrieve explore` fail with exit 3. The engine
+behaved exactly as specified in a broken environment, and the agent held the
+project's values under failure. Facing a physics question it could easily
+have answered from training data, it said:
 
 > I don't want to substitute my own outside knowledge for what the knowledge base would actually retrieve from those two sources — so I'll hold off on answering the substantive question until `retrieve` can actually run.
 
