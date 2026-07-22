@@ -6,7 +6,7 @@ A TypeScript library for creating knowledge bases that are *durable, scalable, a
 
 The spec lives in Ethan's Logseq graph, not in this repo. **Read it, don't duplicate it here.**
 
-> **Graph name:** currently `Logseq-DB-desktop-2` (temporary — Ethan is mid-troubleshooting Logseq-DB; the long-term name is `Logseq-DB-desktop`). If one errors, try the other / `logseq graph list`.
+> **Graph name:** currently `Logseq-DB-Aurelius`
 
 - `[[Durable Knowledge Base Library]]` — the library spec (vision, principles, entities, capabilities, technical components, testing & evaluation, roadmap).
 - `[[Durable Epistack KB Engine]]` — the first instantiation: an engine for applied epistemology, built for the FLF Epistemic Case Study competition. Contains the UX flows (rich detail and implicit assumptions live there).
@@ -14,7 +14,7 @@ The spec lives in Ethan's Logseq graph, not in this repo. **Read it, don't dupli
 - `[[DKB Library Canonical Fixture Corpus]]` — the small canonical fixture corpus for tests/evals (intentionally unrelated content).
 
 Access via the `/logseq-interface` skill →
-`logseq show --graph "Logseq-DB-desktop-2" --page "<title>" --linked-references false`
+`logseq show --graph "Logseq-DB-Aurelius" --page "<title>" --linked-references false`
 
 Known Logseq-CLI quirks (from the spec's "For AI Agent Collaborators", plus session experience): the CLI doesn't differentiate block refs from pages — if a `[[link]]` fails as a page, pull the JSON of the referring block to see what it refs. `--page` and `--id` are mutually exclusive on `show`; a block id alone implies its page context.
 
@@ -104,18 +104,16 @@ The orchestrator is amnesiac by design — context gets compressed or cleared. O
 disk and executables are trustworthy. Four artifacts carry the loop:
 
 1. **`docs/CONTRACTS.md`** — the blessed interface decisions (CLI grammar, exit codes,
-   schemas, artifact layout). Tests derive from it; implementations move to meet
-   tests, never the reverse. Amending a blessed contract requires Ethan's sign-off
+   schemas, artifact layout). Tests derive from it; Amending a blessed contract requires Ethan's sign-off
    and a dated amendment note.
-2. **`testing/tests/`** — the phase-1 logic suite (`bun test testing/tests/`). **The
-   suite IS the project status**; run it before trusting any prose about progress.
+2. **`testing/tests/`** — the phase-1 logic suite (`bun test testing/tests/`).
    Tests are immutable once blessed; if one seems wrong, consult Ethan — never edit
    to green.
 3. **`LOOP.md`** — the orchestrator state ledger: bootstrap read-order, current
    phase, task queue, append-only decision & session logs. Fresh instances start
    there; every session appends before ending.
 4. **`docs/SPEC_SNAPSHOT.md`** — dated compilation of the Logseq spec for subagent
-   briefs (the graph remains source of truth; refresh on drift).
+   briefs, frequently cleared (the graph remains source of truth; refresh on drift).
 
 Loop protocol: run suite → pick reddest failure whose dependencies are green (build
 order: errors → ledger → convention → ingestion → synthesis → retrieval → cli →
@@ -127,8 +125,7 @@ Subagent-driven development is deliberate **token economy**, not just delegation
 the orchestrator's context is the scarce resource. Subagents read the contracts,
 spec excerpts, and failing tests from disk themselves (briefs cite paths + section
 names, never paste file bodies) and burn their own context iterating; they return
-only a compact report (what changed, suite state, deviations). The orchestrator
-never reads implementation code it doesn't have to — it trusts the suite.
+only a compact report (what changed, suite state, deviations).
 
 ## Working conventions for agents
 
