@@ -89,6 +89,14 @@ body {
     padding-left: 0.85em;
   }
 
+  // The export's outermost level is document structure, not a list — its
+  // items are the H2 sections. Drop that bullet and indent so the headings
+  // sit flush. The :has() keeps this off ordinary lists on the other pages.
+  > ul:has(> li > h2) {
+    padding-left: 0;
+    list-style: none;
+  }
+
   blockquote {
     color: rgba(194, 192, 182, 0.82);
     background-color: $dkb-raised;
