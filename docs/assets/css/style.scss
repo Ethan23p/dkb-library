@@ -6,7 +6,7 @@
 // ─────────────────────────────────────────────────────────────────
 // Dark theme
 // #0F0F0E  page ground      #C2C0B6  text
-// #1F1E1D  reading surface  #D97757  primary accent
+// #1F1E1D  reading surface  #D94F1A  primary accent
 // #262624  raised surface   #F0B60F  secondary accent
 // #30302E  borders
 // ─────────────────────────────────────────────────────────────────
@@ -16,7 +16,7 @@ $dkb-surface: #1F1E1D;
 $dkb-raised:  #262624;
 $dkb-border:  #30302E;
 $dkb-text:    #C2C0B6;
-$dkb-accent:  #D97757;
+$dkb-accent:  #D94F1A;
 $dkb-accent2: #F0B60F;
 
 :root {
@@ -29,7 +29,7 @@ body {
 }
 
 ::selection {
-  background-color: rgba(217, 119, 87, 0.32);
+  background-color: rgba(217, 79, 26, 0.32);
 }
 
 .markdown-body {
