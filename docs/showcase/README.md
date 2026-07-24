@@ -15,7 +15,7 @@ principles.
 Two layers below this page, matching the project's own ethos — interpretation
 on top, source data preserved underneath:
 **[the full walkthrough](./walking-skeleton.md)** (every message verbatim,
-with context) and **[the unedited artifacts](./unedited/)** (machine
+with context) and **[the unedited artifacts](https://github.com/Ethan23p/dkb-library/tree/main/docs/showcase/unedited/)** (machine
 transcripts, gate results, judge verdicts, stats — exactly as the harness
 wrote them, one passing run and one failing run).
 
@@ -103,7 +103,7 @@ check can reach.
 > Clean walking-skeleton run: init → discover fixtures → read convention/import shape → add-source ×2 → retrieve explore → modify-entry → re-retrieve. Grounding and no-leakage are both strong; the assistant consistently relays CLI output with provenance and defers synthesis to retrieval. Only minor ergonomic friction (repeated unsupported --help calls, initial wrong-path Reads), all self-corrected. Passes.
 
 Full justifications, per-gate results, and cost/token stats are in
-[`unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json`](./unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json).
+[`unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json`](https://github.com/Ethan23p/dkb-library/blob/main/docs/showcase/unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json).
 
 ---
 

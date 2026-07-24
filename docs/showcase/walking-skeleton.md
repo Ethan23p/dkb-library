@@ -10,13 +10,13 @@ automated checks ("gates") between turns and an independent judge (Opus)
 grading the transcript against the project's core principles. Nothing here is
 paraphrased beyond formatting — **every user and assistant message below is
 verbatim from the run**; the raw artifacts are in
-[`./unedited/`](./unedited/) exactly as the harness wrote them.
+[`docs/showcase/unedited/`](https://github.com/Ethan23p/dkb-library/tree/main/docs/showcase/unedited/) exactly as the harness wrote them.
 
 **Result: 18/18 gates pass · judge verdict pass ·
 sourceDataFirst 5, jitIntelligence 5, aiAsInterface 5, noLeakage 5, ergonomics 4 ·
 $0.70 · 249 s.** The judge's verbatim justifications are in
 [the overview](./README.md) and
-[`unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json`](./unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json).
+[`unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json`](https://github.com/Ethan23p/dkb-library/blob/main/docs/showcase/unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json).
 
 ---
 
@@ -178,7 +178,7 @@ corrected author line:
 ## Also worth reading: run 1, the honest failure
 
 Run 2 was preceded by a failing run — kept unedited in
-[`./unedited/run-1-fail-2026-07-20T03-37-37Z/`](./unedited/run-1-fail-2026-07-20T03-37-37Z/) —
+[`unedited/run-1-fail-2026-07-20T03-37-37Z/`](https://github.com/Ethan23p/dkb-library/tree/main/docs/showcase/unedited/run-1-fail-2026-07-20T03-37-37Z/) —
 where a bug in the eval environment (the auth token never reached the
 sandboxed engine) made every `retrieve explore` fail with exit 3. The engine
 behaved exactly as specified in a broken environment, and the agent held the
@@ -196,4 +196,4 @@ of the system's principles as the pass.
 
 21 tool calls · 15 bash commands · exit codes: 8×0, 6×2, 1×4 ·
 5.3k output tokens · $0.70 total · 249 s wall clock.
-Full stats and the complete judge verdict: [`unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json`](./unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json).
+Full stats and the complete judge verdict: [`unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json`](https://github.com/Ethan23p/dkb-library/blob/main/docs/showcase/unedited/run-2-pass-2026-07-20T03-44-53Z/summary.json).
