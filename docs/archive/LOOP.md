@@ -1,22 +1,25 @@
-# LOOP.md — Orchestrator State Ledger
+# LOOP.md — Orchestrator State Ledger (ARCHIVED)
 
-> **If you are a fresh orchestrator instance, read in this order:**
-> 1. `CLAUDE.md` (repo root) — project frame and vocabulary
-> 2. `docs/CONTRACTS.md` — the blessed interface decisions (tests derive from these)
-> 3. `docs/SPEC_SNAPSHOT.md` — compiled spec (Logseq graph is source of truth)
-> 4. This file, top to bottom — current phase, queue, decision log
-> 5. Run `bun test testing/tests/` — **the test suite IS the project status.**
->    Prose below can drift; the red/green state cannot.
+> **Archived.** This ledger drove the scaffolded build loop that produced the
+> v0.2.1 walking skeleton. That loop is finished and its scaffolding has been
+> taken down; nothing reads this file as live state, and the task queue below is
+> a historical record, not a to-do list.
 >
-> Protocol: this file is append-mostly. Update "Current phase" and "Task queue" in
-> place; the Decision Log and Session Log only ever grow. Timestamp everything.
+> It is kept for the **Decision Log** and **Session Log**: they are the only
+> record of *why* several implementation choices were made — the bun:sqlite
+> `{readwrite:true}` fix, the auth-gate-after-empty-KB-gate ordering, the
+> coverage-none coercion, the eval's staged `.env`. Consult them before
+> reversing anything that looks arbitrary.
+>
+> Current project state lives in `CLAUDE.md`, `docs/CONTRACTS.md`, and the
+> Logseq spec. `docs/SPEC_SNAPSHOT.md`, referenced below, no longer exists.
 
-## Current phase
+## Current phase (as of archiving)
 
-**v0.2.1 preparation → build loop.** Infrastructure phase: contracts drafted
-(2026-07-19, awaiting Ethan's validation), spec snapshot done, fixture corpus being
-fetched, test suite pending contract validation. No library/engine code exists yet —
-that is correct; tests come first.
+**v0.2.1 walking skeleton: done-criteria met.** Phase-1 logic suite green and
+the walking-skeleton scenario passing end-to-end. Remaining v0.2.1 work is the
+round-out bucket — the interface plugin, CLI polish, and a demo knowledge base —
+tracked outside this file.
 
 ## The build loop (once prep is blessed)
 
@@ -54,9 +57,9 @@ Ground rules for the loop:
 - [x] BUILD: complete in 3 cycles (2026-07-19) — `bun test testing/tests` = 12/12 green
 - [x] Walking-skeleton run + ws-grade: **PASS** (run 2, 2026-07-19) — 18/18 gates,
       grade 5/5/5/5/4. **v0.2.1 done-criteria met** (suite 12/12 + scenario e2e).
-- [ ] agt-5: Ethan's human transcript review (artifacts:
+- [x] agt-5: human transcript review (artifacts:
       `testing/artifacts/walking-skeleton-2026-07-20T03-44-53Z/transcript.md`)
-- [ ] Demo KB creation; then Epistack submission draft (deadline ~2026-07-25)
+- [ ] Demo KB creation (Ethan)
 
 ## Decision Log (append-only)
 
@@ -157,5 +160,12 @@ Ground rules for the loop:
   createArtifactsDir/writePartialArtifacts; runtime.ts progress lines; documented
   in DESIGN.md §"Progress & partial artifacts"). Parse-checked via bun build;
   behavior change is additive — next eval run doubles as its live check.
-  **Remaining: agt-5 human review (Ethan) → demo KB → submission draft. Nothing
+  **Remaining: human review → demo KB → submission draft. Nothing
   is blocked on the orchestrator; resume from the task queue above.**
+- **2026-07-23 · loop closed (Fable)**: Human transcript review done. Build-loop
+  scaffolding taken down and this ledger archived; `docs/CONTRACTS.md` stays as a
+  design reference and `testing/tests/` as an ordinary regression suite. Round-out
+  work landed in the same pass: exit code 8 (AUTH), `--help` and `--verbose`,
+  explore-model lifted from `inference.ts` into the engine's `config.yml`, and the
+  repo packaged as a Claude Code plugin (`skills/dkb/SKILL.md`, `bin/dkb`,
+  self-marketplace) with `docs/PLUGIN.md` recording the mechanics.

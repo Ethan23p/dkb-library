@@ -64,11 +64,11 @@ Entities (each specced at *platonic* / *v0.2.1* / *v0.2.2* levels in the spec):
 
 ## Current phase & constraints
 
-**v0.2.1 — walking skeleton (DOING).** A sparse TypeScript program: most entities and capabilities exist but shallow, with placeholder data and dummy returns. CLI only, plugin deferred; source data is already-processed `.md`/`.txt`; entity-boundary compromises are acceptable (remedied in v0.2.2). Done means: the walking-skeleton scenario runs end-to-end and phase-1 test cases pass.
+**v0.2.1 — walking skeleton (DOING).** A sparse TypeScript program: most entities and capabilities exist but shallow. Source data is already-processed `.md`/`.txt`; entity-boundary compromises are acceptable (remedied in v0.2.2). Done means: the walking-skeleton scenario runs end-to-end and phase-1 test cases pass.
 
-Roadmap position: spec, UX flows, test cases, harness runtime, technical-component declarations, and the Testing & Evaluation recompile are **done**. Remaining: **build out the engineering loop with Fable, then execute it** to satisfy the test suite and design doc; then write the engine v0.2.1 and create a demo KB. The Epistack submission draft follows; deadline is ~Jul 25 2026.
+Roadmap position: the walking-skeleton done-criteria are **met** — phase-1 suite green, scenario passing end-to-end. Also landed: the Smart-Interface Agent as a skill, the plugin access path, `--help` and `--verbose`, and the engine's own `config.yml`. Remaining for v0.2.1: a demo knowledge base (Ethan). Epistack submission is ongoing — the Alpha is in, and work continues toward full v0.2.1.
 
-**v0.2.2 — prototype**: robust definitions, error handling, `--help` guidance, full AI-legible CLI polish, plugin interface, graph search. Done means phase-2 test cases pass.
+**v0.2.2 — prototype**: robust definitions, error handling, full AI-legible CLI polish (did-you-mean, `intro`, complete `--json` coverage), graph search. Done means phase-2 test cases pass.
 
 ## Technical components (v0.2.1)
 
@@ -77,8 +77,9 @@ How scope maps onto code (spec: Technical Specification > Components): **ledger,
 ## Repo layout
 
 - `library/` — the DKB Library source (TypeScript); all mechanisms live here.
-- `engines/epistack/` — the first engine instantiation; stays thin (CLI title, paths, convention seed, `main()`).
+- `engines/epistack/` — the first engine instantiation; stays thin (CLI title, invocation name, convention seed, model choice, `main()`).
 - `testing/` — harness, evals, and run artifacts.
+- `skills/dkb/SKILL.md`, `bin/dkb`, `.claude-plugin/` — the Claude Code plugin: the repo installs itself as the Smart-Interface Agent plus the `dkb` command. See `docs/PLUGIN.md`.
 
 ## Testing & evaluation
 
@@ -98,34 +99,19 @@ The spec's "Testing & Evaluation" section is authoritative; highlights:
 - Every run writes artifacts (transcript, summary, stats) to `testing/artifacts/` (gitignored).
 - Gates needing exit codes use `ctx.exec()` — the SDK doesn't expose Bash exit codes, and CLI-as-subprocess is the spec-correct approach anyway.
 
-## Build-loop infrastructure (the orchestrator's lifelines)
+## Repo documents
 
-The orchestrator is amnesiac by design — context gets compressed or cleared. Only
-disk and executables are trustworthy. Four artifacts carry the loop:
-
-1. **`docs/CONTRACTS.md`** — the blessed interface decisions (CLI grammar, exit codes,
-   schemas, artifact layout). Tests derive from it; Amending a blessed contract requires Ethan's sign-off
-   and a dated amendment note.
-2. **`testing/tests/`** — the phase-1 logic suite (`bun test testing/tests/`).
-   Tests are immutable once blessed; if one seems wrong, consult Ethan — never edit
-   to green.
-3. **`LOOP.md`** — the orchestrator state ledger: bootstrap read-order, current
-   phase, task queue, append-only decision & session logs. Fresh instances start
-   there; every session appends before ending.
-4. **`docs/SPEC_SNAPSHOT.md`** — dated compilation of the Logseq spec for subagent
-   briefs, frequently cleared (the graph remains source of truth; refresh on drift).
-
-Loop protocol: run suite → pick reddest failure whose dependencies are green (build
-order: errors → ledger → convention → ingestion → synthesis → retrieval → cli →
-engine) → dispatch one subagent per component/failure-cluster, briefed with specific
-CONTRACTS.md sections → verify red-to-green with no regressions and failures that
-migrate for the right reason → append to LOOP.md → repeat.
-
-Subagent-driven development is deliberate **token economy**, not just delegation:
-the orchestrator's context is the scarce resource. Subagents read the contracts,
-spec excerpts, and failing tests from disk themselves (briefs cite paths + section
-names, never paste file bodies) and burn their own context iterating; they return
-only a compact report (what changed, suite state, deviations).
+- **`docs/CONTRACTS.md`** — the concrete interface decisions the spec deliberately
+  leaves open (CLI grammar, exit codes, KB schema, artifact formats). The tests
+  derive from it. Changing a decision means Ethan's sign-off and a dated amendment
+  note at the bottom, never a silent edit.
+- **`testing/tests/`** — the phase-1 regression suite (`bun test testing/tests/`).
+  If a test looks wrong, consult Ethan; don't edit it to green.
+- **`docs/PLUGIN.md`** — how this repo packages itself as a Claude Code plugin,
+  with links to the upstream docs the mechanics come from.
+- **`docs/PLAYTESTING.md`** — the guide handed to someone trying the system.
+- **`docs/archive/`** — superseded process documents, kept for their decision
+  records.
 
 ## Working conventions for agents
 

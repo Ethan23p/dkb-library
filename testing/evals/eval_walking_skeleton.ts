@@ -1,5 +1,5 @@
 // Walking-skeleton acceptance eval — ws-1 … ws-6 + ws-grade.
-// Spec: SPEC_SNAPSHOT.md "Walking-skeleton scenario"; contracts: docs/CONTRACTS.md.
+// Spec: the Logseq spec's "Walking-skeleton scenario"; contracts: docs/CONTRACTS.md.
 // The in-loop agent plays the User's AI assistant driving the CLI; deterministic
 // gates run between turns via the shared checkKB predicate; ws-grade is an
 // LLM-judged rubric over the full transcript.

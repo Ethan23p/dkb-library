@@ -1,0 +1,11 @@
+{
+  "name": "dkb",
+  "displayName": "Durable Knowledge Base",
+  "version": "0.2.1",
+  "description": "Build and query a durable, append-only knowledge base that answers only from your own sources, with full provenance.",
+  "author": {
+    "name": "Ethan Porter"
+  },
+  "repository": "https://github.com/Ethan23p/dkb-library",
+  "keywords": ["knowledge-base", "provenance", "epistemology", "retrieval"]
+}
