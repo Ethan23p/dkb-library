@@ -103,10 +103,10 @@ The agent relays it:
 > **On growth rate:** Koch, Bleicher & Stöcker derive differential equations (their eqs. 10–12) governing how a micro black hole would accrete matter, depending on the number of extra spatial dimensions, ambient density, and accretion parameters. In the relevant limiting case, they calculate that a mini black hole accreting the Earth would take **many times longer than the age of the universe**. They bolster this with an astrophysical check: the continued existence of old white dwarfs and neutron stars implies cosmic-ray-produced black holes (which would form under similar physics) can't be growing fast enough to have consumed those objects already.
 >
 > **On whether "slow" = "safe":** The two sources diverge here. Koch et al. implicitly equate slow theoretical growth with safety. Ord, Hillerbrand & Sandberg directly push back on that equivalence — they distinguish:
-> - **P(X|A)** — probability of disaster *given the argument/theory is sound*
+> - **P(X\|A)** — probability of disaster *given the argument/theory is sound*
 > - **P(X)** — the *actual* probability of disaster
 >
-> They argue you can't just report P(X|A) as if it's the whole story: you also have to weigh **P(¬A)** — the chance the underlying theory, model, or calculation is wrong — and P(X|disaster-conditional-on-theory-failure). The KB notes their striking result: even being *very confident* in the theory (P(¬A) as low as 10⁻⁴), you still get unacceptably high disaster probabilities unless the "if the theory is wrong" disaster probability is implausibly tiny. Given extinction-level stakes, they conclude that "slow growth predicted by theory" is **not methodologically equivalent to "safe"** — it omits the risk that the theory itself is mistaken.
+> They argue you can't just report P(X\|A) as if it's the whole story: you also have to weigh **P(¬A)** — the chance the underlying theory, model, or calculation is wrong — and P(X\|disaster-conditional-on-theory-failure). The KB notes their striking result: even being *very confident* in the theory (P(¬A) as low as 10⁻⁴), you still get unacceptably high disaster probabilities unless the "if the theory is wrong" disaster probability is implausibly tiny. Given extinction-level stakes, they conclude that "slow growth predicted by theory" is **not methodologically equivalent to "safe"** — it omits the risk that the theory itself is mistaken.
 >
 > **Provenance:**
 > - [2] *Exclusion of black hole disaster scenarios at the LHC* — Koch, Bleicher, Stöcker (arxiv.org/abs/0807.3349)

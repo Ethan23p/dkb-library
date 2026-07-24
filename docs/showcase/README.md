@@ -29,7 +29,7 @@ The two fixture sources genuinely disagree on the demo question — whether
 disagreeing sources into one confident answer. Instead, the synthesis said:
 
 > **On whether "slow" = "safe":** The two sources diverge here. Koch et al. implicitly equate slow theoretical growth with safety. Ord, Hillerbrand & Sandberg directly push back on that equivalence — they distinguish:
-> - **P(X|A)** — probability of disaster *given the argument/theory is sound*
+> - **P(X\|A)** — probability of disaster *given the argument/theory is sound*
 > - **P(X)** — the *actual* probability of disaster
 
 Both positions, both provenances, no adjudication — the judgment stays with
