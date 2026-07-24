@@ -1,0 +1,131 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+// ─────────────────────────────────────────────────────────────────
+// Dark theme
+// #0F0F0E  page ground      #C2C0B6  text
+// #1F1E1D  reading surface  #D97757  primary accent
+// #262624  raised surface   #F0B60F  secondary accent
+// #30302E  borders
+// ─────────────────────────────────────────────────────────────────
+
+$dkb-ground:  #0F0F0E;
+$dkb-surface: #1F1E1D;
+$dkb-raised:  #262624;
+$dkb-border:  #30302E;
+$dkb-text:    #C2C0B6;
+$dkb-accent:  #D97757;
+$dkb-accent2: #F0B60F;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: $dkb-ground;
+  color: $dkb-text;
+}
+
+::selection {
+  background-color: rgba(217, 119, 87, 0.32);
+}
+
+.markdown-body {
+  background-color: $dkb-surface;
+  color: $dkb-text;
+  border: 1px solid $dkb-border;
+  border-radius: 8px;
+  padding: 2.5rem;
+
+  @media (max-width: 544px) {
+    padding: 1.25rem;
+    border-radius: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: $dkb-text;
+  }
+
+  h1, h2 {
+    border-bottom-color: $dkb-border;
+  }
+
+  a {
+    color: $dkb-accent;
+
+    &:hover {
+      color: $dkb-accent2;
+    }
+  }
+
+  .anchorjs-link {
+    color: rgba(194, 192, 182, 0.4);
+
+    &:hover {
+      color: $dkb-accent2;
+    }
+  }
+
+  hr {
+    background-color: $dkb-border;
+    border: 0;
+  }
+
+  // Outline markers stay quiet — the write-up nests eight levels deep.
+  li::marker {
+    color: rgba(194, 192, 182, 0.42);
+  }
+
+  blockquote {
+    color: rgba(194, 192, 182, 0.82);
+    background-color: $dkb-raised;
+    border-left: 3px solid $dkb-accent;
+    border-radius: 0 4px 4px 0;
+    padding: 0.5rem 1rem;
+  }
+
+  code, tt {
+    background-color: $dkb-raised;
+    color: $dkb-accent2;
+  }
+
+  pre {
+    background-color: $dkb-ground;
+    color: $dkb-text;
+    border: 1px solid $dkb-border;
+    border-radius: 6px;
+
+    code, tt {
+      background-color: transparent;
+      color: $dkb-text;
+    }
+  }
+
+  .highlight,
+  .highlight pre,
+  .highlighter-rouge .highlight {
+    background-color: $dkb-ground;
+  }
+
+  table {
+    th, td {
+      border-color: $dkb-border;
+    }
+
+    th {
+      background-color: $dkb-raised;
+      color: $dkb-text;
+    }
+
+    tr {
+      background-color: transparent;
+      border-top-color: $dkb-border;
+    }
+
+    tr:nth-child(2n) {
+      background-color: rgba(38, 38, 36, 0.6);
+    }
+  }
+}
