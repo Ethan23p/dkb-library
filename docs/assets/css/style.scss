@@ -78,6 +78,17 @@ body {
     color: rgba(194, 192, 182, 0.42);
   }
 
+  // Primer indents every list 2em, which at nine levels of Logseq export
+  // spends ~288px before the deepest line starts. Keep the first two levels
+  // legible as structure, then taper — the marker column carries the rest.
+  :is(ul, ol) {
+    padding-left: 1.5em;
+  }
+
+  :is(ul, ol) :is(ul, ol) :is(ul, ol) {
+    padding-left: 0.85em;
+  }
+
   blockquote {
     color: rgba(194, 192, 182, 0.82);
     background-color: $dkb-raised;
