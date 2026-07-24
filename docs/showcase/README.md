@@ -53,11 +53,12 @@ the pass.
 ### 3. Fresh inference, not stale interpretation
 
 After a metadata edit, the user re-asked the original question. The agent
-**re-ran retrieval rather than patching its earlier answer** — and because
-every explore is a live inference over the full sources at retrieval time
-(no cached embeddings, no stored interpretations), the fresh synthesis even
-differs in emphasis from the first — same sources, same provenance, fresh
-phrasing. The interpretation is deliberately not the stored artifact; what's
+**re-ran retrieval rather than patching its earlier answer**, and the fresh
+result **accurately carried the corrected metadata in its provenance** —
+because every explore is a live inference over the full sources at retrieval
+time (no cached embeddings, no stored interpretations), the correction
+propagated with nothing to invalidate. The two syntheses even differ in
+phrasing: the interpretation is deliberately not the stored artifact; what's
 durable is the evidence trail beneath it. The judge singled this out:
 
 > Synthesis was deferred to retrieval time via `retrieve explore`, and after the metadata edit the assistant re-ran retrieval rather than patching a stale prior interpretation.
