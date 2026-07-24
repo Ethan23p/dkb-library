@@ -23,19 +23,21 @@ wrote them, one passing run and one failing run).
 
 ### 1. The demo is the case study
 
-The fixture corpus isn't toy data: the two sources are Koch, Bleicher &
-Stöcker's *Exclusion of black hole disaster scenarios at the LHC* and Ord,
+The fixture corpus isn't toy data: the two sources address one of the
+competition's own case studies (LHC black holes), and one of them is Ord,
 Hillerbrand & Sandberg's *Probing the Improbable* — the canonical
-methodological paper on catastrophic-risk epistemics, addressing one of the
-competition's own case studies (LHC black holes). Asked whether "slow enough
-not to matter for billions of years" is the same thing as "safe," the system
-surfaced the disagreement between its sources — Koch et al. implicitly
-equating slow predicted growth with safety; Ord et al. distinguishing
-P(disaster | the theory is sound) from P(disaster) — and presented both
-positions with provenance rather than resolving them. The knowledge base's
+methodological paper on catastrophic-risk epistemics. Asked whether "slow
+enough not to matter for billions of years" is the same thing as "safe,"
+the system's synthesis said:
+
+> **On whether "slow" = "safe":** The two sources diverge here. Koch et al. implicitly equate slow theoretical growth with safety. Ord, Hillerbrand & Sandberg directly push back on that equivalence — they distinguish:
+> - **P(X|A)** — probability of disaster *given the argument/theory is sound*
+> - **P(X)** — the *actual* probability of disaster
+
+Both positions, both provenances, no adjudication. The knowledge base's
 answer is itself a demonstration of the epistemics this project is about:
-the difference between what a theory predicts and whether the theory can be
-trusted is preserved, not smoothed over.
+the difference between what a theory predicts and whether the theory can
+be trusted is preserved, not smoothed over.
 
 ### 2. Values held under failure
 
