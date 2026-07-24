@@ -93,7 +93,10 @@ lands as one ledger transaction carrying a content hash.
 One command: `retrieve explore "<the question>"`. The engine reads the full
 sources into a fresh inference call *at retrieval time* — no pre-computed
 embeddings or cached interpretations — and returns a synthesis with a
-coverage rating (`partial`) and provenance. The agent relays it:
+coverage rating (`partial`) and provenance. Note that where the two sources
+disagree (whether slow predicted growth equals safety), the synthesis
+surfaces the disagreement with both provenances instead of resolving it.
+The agent relays it:
 
 > **Assistant:** Here's what the knowledge base says (coverage: **partial**):
 >

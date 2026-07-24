@@ -21,7 +21,23 @@ wrote them, one passing run and one failing run).
 
 ## The moments worth your ninety seconds
 
-### 1. Values held under failure
+### 1. The demo is the case study
+
+The fixture corpus isn't toy data: the two sources are Koch, Bleicher &
+Stöcker's *Exclusion of black hole disaster scenarios at the LHC* and Ord,
+Hillerbrand & Sandberg's *Probing the Improbable* — the canonical
+methodological paper on catastrophic-risk epistemics, addressing one of the
+competition's own case studies (LHC black holes). Asked whether "slow enough
+not to matter for billions of years" is the same thing as "safe," the system
+surfaced the disagreement between its sources — Koch et al. implicitly
+equating slow predicted growth with safety; Ord et al. distinguishing
+P(disaster | the theory is sound) from P(disaster) — and presented both
+positions with provenance rather than resolving them. The knowledge base's
+answer is itself a demonstration of the epistemics this project is about:
+the difference between what a theory predicts and whether the theory can be
+trusted is preserved, not smoothed over.
+
+### 2. Values held under failure
 
 The first run *failed* — an eval-environment bug kept the auth token from the
 sandboxed engine, so every retrieval died with exit 3. Facing a physics
@@ -33,7 +49,7 @@ Source Data First isn't a slogan in a spec; it's what the system did when the
 easy path was fabrication. The failing run is preserved unedited alongside
 the pass.
 
-### 2. Fresh inference, not stale interpretation
+### 3. Fresh inference, not stale interpretation
 
 After a metadata edit, the user re-asked the original question. The agent
 **re-ran retrieval rather than patching its earlier answer** — and because
@@ -46,7 +62,7 @@ differs in emphasis from the first. The judge singled this out:
 That is Just-in-Time Intelligence — the system's answer to the failure mode
 of AI interpretations stacked on interpretations.
 
-### 3. A CLI that teaches its own grammar
+### 4. A CLI that teaches its own grammar
 
 The agent was given no documentation. It learned the entire interface from
 the CLI's error messages, which are written for exactly this:
@@ -61,7 +77,7 @@ Every non-zero exit says what to do next. Fifteen bash commands, and the
 six "failures" among them were all successful discovery — this is what
 "AI agents as first-class interface citizens" looks like in practice.
 
-### 4. Provenance that survives change
+### 5. Provenance that survives change
 
 The user corrected an author line; the ledger recorded the change as a new
 entry rather than overwriting the old one — the prior value stays in the log
