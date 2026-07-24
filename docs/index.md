@@ -1,4 +1,4 @@
-# Durable Knowledge Bases & Memory Systems
+*Ethan Porter's submission to the Future of Life Foundation's Epistack Competition.*
 
 **[See a DKB in action — the showcase →](./showcase/)**  ·  [Repository](https://github.com/Ethan23p/dkb-library)
 
