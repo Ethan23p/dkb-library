@@ -56,7 +56,9 @@ After a metadata edit, the user re-asked the original question. The agent
 **re-ran retrieval rather than patching its earlier answer** — and because
 every explore is a live inference over the full sources at retrieval time
 (no cached embeddings, no stored interpretations), the fresh synthesis even
-differs in emphasis from the first. The judge singled this out:
+differs in emphasis from the first — same sources, same provenance, fresh
+phrasing. The interpretation is deliberately not the stored artifact; what's
+durable is the evidence trail beneath it. The judge singled this out:
 
 > Synthesis was deferred to retrieval time via `retrieve explore`, and after the metadata edit the assistant re-ran retrieval rather than patching a stale prior interpretation.
 
@@ -88,6 +90,12 @@ byte-identical to before ingestion and the full ledger history was intact.
 Durability is checked, not assumed.
 
 ## The judge's scorecard
+
+Two layers of verification, deliberately different in kind: the 18 gates are
+deterministic checks on real KB state (file existence, byte-identity, ledger
+datoms) and don't depend on any model's opinion; the judge grades the
+transcript's *alignment with the principles*, the part no deterministic
+check can reach.
 
 | Principle | Score |
 |---|---|
