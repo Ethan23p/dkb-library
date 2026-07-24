@@ -21,23 +21,22 @@ wrote them, one passing run and one failing run).
 
 ## The moments worth your ninety seconds
 
-### 1. The demo is the case study
+### 1. Disagreement surfaced, not smoothed over
 
-The fixture corpus isn't toy data: the two sources address one of the
-competition's own case studies (LHC black holes), and one of them is Ord,
-Hillerbrand & Sandberg's *Probing the Improbable* — the canonical
-methodological paper on catastrophic-risk epistemics. Asked whether "slow
-enough not to matter for billions of years" is the same thing as "safe,"
-the system's synthesis said:
+The two fixture sources genuinely disagree on the demo question — whether
+"slow enough not to matter for billions of years" is the same thing as
+"safe." The default failure mode of any synthesis layer is to blend
+disagreeing sources into one confident answer. Instead, the synthesis said:
 
 > **On whether "slow" = "safe":** The two sources diverge here. Koch et al. implicitly equate slow theoretical growth with safety. Ord, Hillerbrand & Sandberg directly push back on that equivalence — they distinguish:
 > - **P(X|A)** — probability of disaster *given the argument/theory is sound*
 > - **P(X)** — the *actual* probability of disaster
 
-Both positions, both provenances, no adjudication. The knowledge base's
-answer is itself a demonstration of the epistemics this project is about:
-the difference between what a theory predicts and whether the theory can
-be trusted is preserved, not smoothed over.
+Both positions, both provenances, no adjudication — the judgment stays with
+the reader. The difference between what a theory predicts and whether the
+theory can be trusted survived retrieval intact, which is the epistemics
+this project is about. (Fittingly, the demo topic is one of the
+competition's own case studies.)
 
 ### 2. Values held under failure
 
