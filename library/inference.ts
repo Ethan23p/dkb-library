@@ -15,10 +15,11 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { DkbError, ExitCode } from "./errors";
+import { note } from "./log";
 
-/** One place of configuration: the model behind explore inference.
- *  Haiku 4.5 — fast + cheap; the v0.2.1 corpus is small (context stuffing). */
-const EXPLORE_MODEL = "claude-haiku-4-5";
+// The model is not hardcoded here: it is an instantiation decision, declared by
+// the engine and written into config.yml at init (see config.ts, CONTRACTS A4).
+// This module remains the one place the SDK itself is configured.
 
 /** A source handed to the inference call, in full (context stuffing). */
 export interface InferenceSource {
@@ -37,12 +38,12 @@ export interface ExploreVerdict {
   sourceIds: number[];
 }
 
-/** D9: no auth in env → exit 3 (STATE) before any call is attempted. */
+/** D9 + A3: no auth in env → exit 8 (AUTH) before any call is attempted. */
 export function requireAuthToken(): void {
   const token = process.env.CLAUDE_CODE_OAUTH_TOKEN;
   if (!token || token.trim() === "") {
     throw new DkbError(
-      ExitCode.STATE,
+      ExitCode.AUTH,
       "no inference auth token found (CLAUDE_CODE_OAUTH_TOKEN is not set)",
       "log into Claude Code on this system, or set CLAUDE_CODE_OAUTH_TOKEN in the environment (e.g. via a .env file), then re-run",
     );
@@ -81,7 +82,7 @@ function parseVerdict(raw: string, validIds: Set<number>): ExploreVerdict {
     new DkbError(
       ExitCode.UNEXPECTED,
       `inference returned a malformed verdict (${why})`,
-      "re-run the explore; if it persists, report it in LOOP.md with the query used",
+      "re-run the explore; if it persists, report the query used as a bug against the library",
     );
 
   // Tolerate stray text around the object, but require exactly one object.
@@ -125,15 +126,17 @@ function parseVerdict(raw: string, validIds: Set<number>): ExploreVerdict {
 export async function runExploreInference(
   userQuery: string,
   sources: InferenceSource[],
+  model: string,
 ): Promise<ExploreVerdict> {
   requireAuthToken();
+  note(`explore inference: ${sources.length} source(s) in full → ${model}`);
 
   // D11: the SDK's own bookkeeping is pointed at the OS temp dir so nothing
   // is written outside the declared boundaries; sessions are not persisted.
   const configDir = mkdtempSync(path.join(tmpdir(), "dkb-inference-"));
 
   const options: Options = {
-    model: EXPLORE_MODEL,
+    model,
     tools: [], // pure synthesis over the stuffed context; no tool access
     maxTurns: 1,
     settingSources: [], // no user/project settings, no CLAUDE.md leakage
@@ -159,7 +162,7 @@ export async function runExploreInference(
           throw new DkbError(
             ExitCode.UNEXPECTED,
             `inference call ended without a reply (${msg.subtype})`,
-            "re-run the explore; if it persists, check Claude Code auth and report it in LOOP.md",
+            "re-run the explore; if it persists, check that you are logged into Claude Code on this system",
           );
         }
       }
@@ -177,7 +180,7 @@ export async function runExploreInference(
     throw new DkbError(
       ExitCode.UNEXPECTED,
       "inference call produced no result message",
-      "re-run the explore; if it persists, report it in LOOP.md",
+      "re-run the explore; if it persists, report it as a bug against the library",
     );
   }
 

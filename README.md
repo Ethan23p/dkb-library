@@ -7,7 +7,7 @@ interaction, and inference is deferred to the time and context of retrieval.
 
 **The spec is the source of truth and lives in Ethan's Logseq graph**, not in
 this repo — see `CLAUDE.md` for access details and the project's working
-conventions. `docs/SPEC_SNAPSHOT.md` is a dated compilation for reference.
+conventions.
 
 **See it working:** [`docs/showcase/`](docs/showcase/) — the acceptance eval
 of an agent driving the full KB lifecycle (init → ingest → retrieve → modify →
@@ -19,11 +19,24 @@ then the raw artifacts — one honest failure included.
 
 - `library/` — all mechanisms (ledger, ingestion, retrieval, inference, CLI, …)
 - `engines/epistack/` — the first engine instantiation (thin; owns the KB)
-- `docs/CONTRACTS.md` — blessed interface decisions (grammar, exit codes, schemas)
+- `skills/`, `bin/`, `.claude-plugin/` — the Claude Code plugin (`docs/PLUGIN.md`)
+- `docs/CONTRACTS.md` — interface decisions (grammar, exit codes, schemas)
 - `testing/` — logic tests, agentic evals, and the eval harness (`testing/harness/DESIGN.md`)
-- `LOOP.md` — the build-loop state ledger
 
-## Running
+## Using it
+
+The intended interface is a Claude Code plugin — install it and talk to Claude
+rather than running commands yourself:
+
+```
+/plugin marketplace add Ethan23p/dkb-library
+/plugin install dkb@ethan-dkb
+```
+
+See [`docs/PLAYTESTING.md`](docs/PLAYTESTING.md) to try it, and
+[`docs/PLUGIN.md`](docs/PLUGIN.md) for how the packaging works.
+
+## Developing
 
 Requires [Bun](https://bun.sh). Retrieval's inference needs `CLAUDE_CODE_OAUTH_TOKEN`
 (via a gitignored `.env`; Bun auto-loads it).
@@ -32,8 +45,10 @@ Requires [Bun](https://bun.sh). Retrieval's inference needs `CLAUDE_CODE_OAUTH_T
 bun install
 bun test              # phase-1 logic suite (deterministic; one sub-cent inference call)
 bun run eval:ws       # walking-skeleton acceptance eval (agentic; costs ~$1)
-bun engines/epistack/main.ts init --dir <path>   # try the engine itself
+bun engines/epistack/main.ts --help              # the engine directly
+bun engines/epistack/main.ts init --dir <path>
 ```
 
-Current status: **v0.2.1 walking skeleton — complete** (suite 12/12, scenario
-passes end-to-end). See `LOOP.md` for the live task queue.
+Current status: **v0.2.1 walking skeleton — complete** (suite green, scenario
+passes end-to-end), now packaged as a plugin. Remaining for v0.2.1: a demo
+knowledge base.

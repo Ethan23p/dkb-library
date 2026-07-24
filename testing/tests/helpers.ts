@@ -28,7 +28,7 @@ export interface CliResult {
 export function runCli(args: string[], opts: { cwd: string }): CliResult {
   if (!existsSync(CLI_ENTRY)) {
     throw new Error(
-      `engine entry point not found: ${CLI_ENTRY} — the build loop has not produced it yet (see LOOP.md)`,
+      `engine entry point not found: ${CLI_ENTRY} — check DKB_CLI_ENTRY, or that the repo is complete (CONTRACTS D1)`,
     );
   }
   const proc = Bun.spawnSync(["bun", CLI_ENTRY, ...args], {

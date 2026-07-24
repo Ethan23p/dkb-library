@@ -31,7 +31,14 @@ part of the source data itself.
 `;
 
 const exitCode = await runCli(
-  { title: "Epistack", conventionSeed: CONVENTION_SEED },
+  {
+    title: "Epistack",
+    invocation: "dkb", // the command name the plugin puts on PATH
+    conventionSeed: CONVENTION_SEED,
+    // Instantiation decision, written into config.yml at init: Haiku 4.5 is
+    // fast and cheap, and the v0.2.1 corpus is small enough to stuff whole.
+    exploreModel: "claude-haiku-4-5",
+  },
   process.argv.slice(2),
 );
 process.exit(exitCode);

@@ -10,6 +10,7 @@ export enum ExitCode {
   VALIDATION = 5, // missing required metadata, malformed import JSON
   NOT_FOUND = 6, // entry id does not resolve
   FORBIDDEN = 7, // attempt to modify a privileged attribute
+  AUTH = 8, // no usable inference credential (CONTRACTS A3)
 }
 
 /**

@@ -9,6 +9,7 @@ import { existsSync, readFileSync } from "node:fs";
 import * as path from "node:path";
 import { DkbError, ExitCode } from "./errors";
 import { KB_FILENAME, Ledger, type DatomInput } from "./ledger";
+import { note } from "./log";
 
 /** D6 required metadata fields (beyond content itself). */
 const REQUIRED_METADATA = ["title", "author", "origin"] as const;
@@ -141,6 +142,7 @@ export function addSource(dir: string, importPath: string): AddSourceResult {
 
   const stored = lfNormalize(content);
   const contentHash = sha256Hex(stored);
+  note(`ingesting '${parsed.metadata.title}' — ${stored.length} chars, sha256 ${contentHash.slice(0, 12)}…`);
 
   const ledger = Ledger.open(path.join(dir, KB_FILENAME));
   try {

@@ -1,10 +1,10 @@
 # CONTRACTS.md — Blessed Interface Decisions (v0.2.1)
 
-> **Status**: blessed 2026-07-19 (Fable + Ethan). Append-only in spirit: changing a
-> blessed contract requires Ethan's sign-off and a dated amendment note — never a
-> silent edit. Tests derive from this file; implementations move to meet tests.
-> The Logseq spec remains the source of truth for *concept*; this file pins the
-> *concrete decisions* the spec deliberately leaves open.
+> **Status**: blessed 2026-07-19 (Fable + Ethan), amended since — see the bottom.
+> Append-only in spirit: changing a decision requires Ethan's sign-off and a dated
+> amendment note, never a silent edit. The tests derive from this file. The Logseq
+> spec remains the source of truth for *concept*; this file pins the *concrete
+> decisions* the spec deliberately leaves open.
 
 ## D1 — Invocation & entry point
 
@@ -27,6 +27,8 @@ Global flags (every command):
 - `--dir <path>` — target KB directory. Default: cwd.
 - `--json` — machine output mode. (Exists in v0.2.1; the strict single-JSON-document
   stdout guarantee is a phase-2 test, `help-4`.)
+- `--verbose` — progress notes, **stderr only** (amendment A5).
+- `--help` — usage rendered from the capability declarations, exit 0 (amendment A5).
 
 Deferred (v0.2.1): `intro`, `retrieve query`, `remove-entry`, maintain. Unknown
 commands/flags → exit 2. Grammar is generated from the library's capability
@@ -46,6 +48,7 @@ One enumeration in `library` (errors component); single source of truth (`xcut-1
 | 5    | VALIDATION  | missing required metadata, malformed import JSON |
 | 6    | NOT_FOUND   | entry id does not resolve |
 | 7    | FORBIDDEN   | attempt to modify a privileged attribute (`mod-3`) |
+| 8    | AUTH        | no usable inference credential (amendment A3) |
 
 Every non-zero exit's stderr message says **what to do next** (AI-legible requirement).
 
@@ -54,7 +57,7 @@ Every non-zero exit's stderr message says **what to do next** (AI-legible requir
 `init` creates **exactly** these three files in the target dir, nothing else:
 
 ```
-config.yml        # engine config (title, paths, versions)
+config.yml        # engine config (title, paths, inference, versions)
 kb.sqlite         # the knowledge base — one file (xcut-3)
 convention.md     # the convention seed (live best-practices doc)
 ```
@@ -135,8 +138,11 @@ auth path the eval harness already uses. Rationale: the spec defines v0.2.1 expl
 untestable, and the spec's own Ideation section blesses the OAuth-token path. The
 inference handler's *plugin generation* remains deferred to v0.2.2.
 
-- No auth in env → exit 3 (STATE) with a message explaining how to provide it.
+- No auth in env → exit 8 (AUTH) with a message explaining how to provide it
+  (amendment A3; originally exit 3).
 - Explore is strictly read-only over the KB (`ret-2`).
+- The model is **not** a library constant: the engine declares it and `init`
+  writes it to `config.yml`, which the library reads back (amendment A4).
 
 ## D10 — Explore artifact format
 
@@ -169,8 +175,8 @@ verified by sandbox snapshot around the walking skeleton.
 - Agentic evals: harness-driven (`testing/evals/`), per `testing/harness/DESIGN.md`.
 - `assertKBCorrect(dir, expectedSources)` lives in `testing/tests/kb_assert.ts` and is
   imported by both suites — the reusable predicate the spec calls for.
-- Tests are immutable once blessed. Red-first: today the whole suite fails with
-  "entry point not found," which is the correct first red.
+- Tests are immutable once blessed. If one looks wrong, that is a conversation with
+  Ethan and an amendment here — never an edit to green.
 
 ---
 *Amendments:*
@@ -181,3 +187,20 @@ verified by sandbox snapshot around the walking skeleton.
 - **A2 (2026-07-19, informational)**: Ethan corrected the Logseq spec — inference
   handler v0.2.1 is Agent-SDK-only (plugin generation post-v0.2), which makes D9 the
   spec-aligned reading rather than a compromise. No contract text change needed.
+- **A3 (2026-07-23, Fable — signed off by Ethan)**: D3 gains exit code **8 (AUTH)**,
+  and a missing inference credential moves from 3 to 8. Rationale: exit 3 meant three
+  different things (KB already exists, KB missing, no auth token), and `xcut-1` asks
+  for one meaning per code. Cheap to fix now, while the surface area is small; an
+  agent that sees 8 knows to fix credentials rather than to look for a knowledge base.
+- **A4 (2026-07-23, Fable — signed off by Ethan)**: the explore model is an
+  *instantiation* decision, not a library constant. The engine declares it
+  (`EngineDef.exploreModel`), `init` writes it to `config.yml` under `inference:`,
+  and `library/config.ts` reads it back at retrieval time. A missing file or key
+  falls back to the library default, so knowledge bases created before the key
+  existed keep working.
+- **A5 (2026-07-23, Fable — signed off by Ethan)**: `--help` and `--verbose` join
+  the global flags. Help is rendered from the capability declarations (each command
+  declares a runnable `example`), so grammar and documentation cannot drift; it is
+  answered before grammar validation and exits 0. Verbose output goes to stderr
+  only — stdout stays a clean single document, protecting `--json` and phase-2
+  `help-4`. No on-disk log in v0.2.1.

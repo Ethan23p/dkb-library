@@ -10,8 +10,10 @@
 // ledger writes of any kind (ret-2: kb.sqlite is byte-identical afterwards).
 
 import * as path from "node:path";
+import { readExploreModel } from "./config";
 import { DkbError, ExitCode } from "./errors";
 import { KB_FILENAME, Ledger } from "./ledger";
+import { note } from "./log";
 import { requireAuthToken, runExploreInference, type InferenceSource } from "./inference";
 
 /** D10 (incl. Amendment A1): one provenance entry per source drawn on. */
@@ -54,11 +56,12 @@ function readSources(dir: string): InferenceSource[] {
 
 /**
  * Explore the KB at `dir` with `userQuery`. Fails EMPTY_KB (4) on a KB with
- * no sources, STATE (3) when inference auth is absent — both before any
+ * no sources, AUTH (8) when inference auth is absent — both before any
  * inference is attempted.
  */
 export async function explore(dir: string, userQuery: string): Promise<ExploreArtifact> {
   const sources = readSources(dir);
+  note(`read ${sources.length} current source(s) from the ledger`);
   if (sources.length === 0) {
     throw new DkbError(
       ExitCode.EMPTY_KB,
@@ -67,9 +70,9 @@ export async function explore(dir: string, userQuery: string): Promise<ExploreAr
     );
   }
 
-  requireAuthToken(); // D9: exit 3 with guidance before attempting the call
+  requireAuthToken(); // D9/A3: exit 8 with guidance before attempting the call
 
-  const verdict = await runExploreInference(userQuery, sources);
+  const verdict = await runExploreInference(userQuery, sources, readExploreModel(dir));
 
   const byId = new Map(sources.map((s) => [s.id, s]));
   const provenance: ProvenanceEntry[] = verdict.sourceIds.map((id) => {

@@ -9,6 +9,7 @@ import * as path from "node:path";
 import { DkbError, ExitCode } from "./errors";
 import { initKb, type EngineDef } from "./init";
 import { addSource } from "./ingestion";
+import { setVerbose } from "./log";
 import { modifyEntry } from "./modify";
 import { explore } from "./retrieval";
 
@@ -24,12 +25,16 @@ interface CommandDecl {
   /** Allowed subcommand for the second positional, if any. */
   subcommands?: string[];
   summary: string;
+  /** One runnable invocation, rendered by --help. Keep it copy-pasteable. */
+  example: string;
 }
 
-/** Global flags, valid on every command (D2). */
-const GLOBAL_FLAGS: Record<string, FlagSpec> = {
-  "--dir": { takesValue: true },
-  "--json": { takesValue: false },
+/** Global flags, valid on every command (D2). Each carries its help text. */
+const GLOBAL_FLAGS: Record<string, FlagSpec & { help: string }> = {
+  "--dir": { takesValue: true, help: "target knowledge base directory (default: current directory)" },
+  "--json": { takesValue: false, help: "machine-readable output: one JSON document on stdout" },
+  "--verbose": { takesValue: false, help: "progress notes on stderr (stdout stays clean)" },
+  "--help": { takesValue: false, help: "show this message; also valid after a command" },
 };
 
 /** The v0.2.1 capability declarations — the grammar's single source. */
@@ -38,17 +43,20 @@ const COMMANDS: Record<string, CommandDecl> = {
     implemented: true,
     flags: {},
     summary: "initialize a knowledge base in the target dir",
+    example: "init --dir ./my-kb",
   },
   "add-source": {
     implemented: true,
     flags: { "--json-import": { takesValue: true } },
     summary: "ingest one source via import JSON",
+    example: "add-source --json-import ./import.json",
   },
   retrieve: {
     implemented: true,
     flags: {},
     subcommands: ["explore"],
     summary: "context-stuffed synthesis with provenance",
+    example: 'retrieve explore "what do my sources say about X?"',
   },
   "modify-entry": {
     implemented: true,
@@ -58,6 +66,7 @@ const COMMANDS: Record<string, CommandDecl> = {
       "--value": { takesValue: true },
     },
     summary: "modify one metadata attribute of an entry",
+    example: 'modify-entry --id 3 --attribute source/author --value "Correct Name"',
   },
 };
 
@@ -65,6 +74,60 @@ function usageLine(): string {
   return Object.entries(COMMANDS)
     .map(([name, c]) => `  ${name}${c.subcommands ? ` <${c.subcommands.join("|")}>` : ""} — ${c.summary}`)
     .join("\n");
+}
+
+/** How this engine is invoked on the command line, for help text only. */
+function invocationName(engine: EngineDef): string {
+  return engine.invocation ?? engine.title.toLowerCase();
+}
+
+function flagLines(flags: Record<string, FlagSpec & { help?: string }>): string {
+  return Object.entries(flags)
+    .map(([name, spec]) => `  ${(name + (spec.takesValue ? " <value>" : "")).padEnd(20)}${spec.help ?? ""}`)
+    .join("\n");
+}
+
+/**
+ * Render help from the capability declarations above — never hand-maintained,
+ * so the grammar and its documentation cannot drift apart. `command` scopes it
+ * to one command; omitted, it describes the whole CLI.
+ */
+export function renderHelp(engine: EngineDef, command?: string): string {
+  const bin = invocationName(engine);
+  if (command && COMMANDS[command]) {
+    const decl = COMMANDS[command];
+    const sub = decl.subcommands ? ` <${decl.subcommands.join("|")}>` : "";
+    const own = Object.entries(decl.flags).length > 0 ? `\ncommand flags:\n${flagLines(decl.flags)}\n` : "";
+    return (
+      `${bin} ${command}${sub} — ${decl.summary}\n` +
+      own +
+      `\nglobal flags:\n${flagLines(GLOBAL_FLAGS)}\n` +
+      `\nexample:\n  ${bin} ${decl.example}\n`
+    );
+  }
+  return (
+    `${engine.title} — a durable knowledge base (DKB library, v0.2.1)\n\n` +
+    `usage: ${bin} <command> [flags]\n\n` +
+    `commands:\n${usageLine()}\n\n` +
+    `global flags:\n${flagLines(GLOBAL_FLAGS)}\n\n` +
+    `examples:\n` +
+    Object.values(COMMANDS)
+      .map((c) => `  ${bin} ${c.example}`)
+      .join("\n") +
+    `\n\nEvery failure prints an 'error:' line and a 'next:' line saying what to do.\n` +
+    `Run '${bin} <command> --help' for one command.\n`
+  );
+}
+
+/**
+ * Detect a help request before grammar parsing, so `--help` never trips the
+ * unknown-flag path. Returns the command it scopes to, "" for general help,
+ * or null when help was not requested.
+ */
+function helpRequest(argv: string[]): string | null {
+  if (!argv.some((t) => t === "--help" || t === "-h")) return null;
+  const first = argv.find((t) => !t.startsWith("-"));
+  return first && COMMANDS[first] ? first : "";
 }
 
 export interface ParsedInvocation {
@@ -82,7 +145,7 @@ export function parseArgs(argv: string[], cwd: string): ParsedInvocation {
     throw new DkbError(
       ExitCode.USAGE,
       "no command given",
-      `invoke one of:\n${usageLine()}`,
+      `invoke one of:\n${usageLine()}\nor pass --help for flags and examples`,
     );
   }
   const decl = COMMANDS[commandName];
@@ -90,7 +153,7 @@ export function parseArgs(argv: string[], cwd: string): ParsedInvocation {
     throw new DkbError(
       ExitCode.USAGE,
       `unknown command '${commandName}'`,
-      `invoke one of:\n${usageLine()}`,
+      `invoke one of:\n${usageLine()}\nor pass --help for flags and examples`,
     );
   }
 
@@ -168,15 +231,23 @@ function requireStringFlag(inv: ParsedInvocation, flag: string): string {
  */
 export async function runCli(engine: EngineDef, argv: string[], cwd = process.cwd()): Promise<number> {
   try {
+    // --help is answered from the declarations, before grammar validation.
+    const help = helpRequest(argv);
+    if (help !== null) {
+      process.stdout.write(renderHelp(engine, help || undefined));
+      return ExitCode.OK;
+    }
+
     const inv = parseArgs(argv, cwd);
+    setVerbose(inv.flags.get("--verbose") === true);
     const decl = COMMANDS[inv.command];
 
     if (!decl.implemented) {
-      // Recognized by the grammar, not yet built in this walking-skeleton cycle.
+      // Recognized by the grammar, not yet built in this cycle.
       throw new DkbError(
         ExitCode.UNEXPECTED,
         `'${inv.command}' is a valid ${engine.title} command but is not implemented yet in this build`,
-        "init, add-source, and modify-entry work so far (v0.2.1 walking skeleton in progress); check LOOP.md for build status",
+        `run '${invocationName(engine)} --help' to see the commands this build supports`,
       );
     }
 
@@ -279,7 +350,7 @@ export async function runCli(engine: EngineDef, argv: string[], cwd = process.cw
         throw new DkbError(
           ExitCode.UNEXPECTED,
           `command '${inv.command}' is declared implemented but has no handler`,
-          "this is a library bug — report it in LOOP.md",
+          "this is a library bug — report it against the DKB library",
         );
     }
   } catch (err) {
@@ -289,7 +360,7 @@ export async function runCli(engine: EngineDef, argv: string[], cwd = process.cw
     }
     const message = err instanceof Error ? err.message : String(err);
     process.stderr.write(
-      `error: unexpected failure: ${message}\nnext: re-run the command; if it persists, report it in LOOP.md\n`,
+      `error: unexpected failure: ${message}\nnext: re-run the command; if it persists, report it against the DKB library\n`,
     );
     return ExitCode.UNEXPECTED;
   }
