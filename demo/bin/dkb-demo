@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+# dkb-demo — hydrate a prebuilt demo knowledge base into the user's own directory.
+#
+# Why hydrate instead of operating in place: a plugin root is ephemeral. Claude
+# Code replaces it on every update and garbage-collects old versions, so a KB
+# left inside it would take the user's corrections and additions with it when it
+# went. `use` therefore copies — the resulting directory is the user's, it lives
+# where they can see it, and it survives everything that happens to this plugin.
+#
+# Commands:
+#   dkb-demo list                     what is available
+#   dkb-demo use <name> [--dir <p>]   copy a KB into ./demo-<name>/ (or --dir)
+#   dkb-demo path <name>              print a hydrated KB's path, for --dir
+#
+# Exit codes mirror dkb: 0 ok · 2 usage · 3 state.
+set -euo pipefail
+
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+KBS_ROOT="$PLUGIN_ROOT/kbs"
+
+# --- Corpus catalogue -------------------------------------------------------
+# Cost and latency are MEASURED, not estimated (Agent SDK total_cost_usd; see
+# SCRATCHPAD.md). Re-measure and edit here if the corpora or the model change —
+# this is the single place the figures are stated.
+kb_blurb() {
+  case "$1" in
+    lhc)   echo "Could the LHC destroy the Earth? Five papers on micro-black-hole risk — including one that disputes the others' methodology." ;;
+    saber) echo "SABRE: how American Airlines put computers in front of ordinary hourly staff in 1960, and what that did to the work." ;;
+  esac
+}
+kb_stats() {
+  case "$1" in
+    lhc)   echo "5 sources · ~74k words · ~40-60s and ~\$1.30 of API-equivalent usage per question" ;;
+    saber) echo "5 sources · ~5k words · ~20s and ~\$0.10 of API-equivalent usage per question" ;;
+  esac
+}
+KB_NAMES=(lhc saber)
+
+die() { # die <exit-code> <error> <next>
+  echo "error: $2" >&2
+  echo "next: $3" >&2
+  exit "$1"
+}
+
+known_kb() {
+  local candidate="$1" name
+  for name in "${KB_NAMES[@]}"; do [ "$name" = "$candidate" ] && return 0; done
+  return 1
+}
+
+require_known_kb() {
+  known_kb "$1" || die 2 "no such demo knowledge base: '$1'" \
+    "use one of: $(printf '%s ' "${KB_NAMES[@]}" | sed 's/ $//')"
+  [ -d "$KBS_ROOT/$1" ] || die 3 "demo knowledge base '$1' is missing from $KBS_ROOT" \
+    "reinstall the dkb-demo plugin, or run 'bun demo/build.ts $1' from a clone to rebuild it"
+}
+
+usage() {
+  cat <<'EOF'
+dkb-demo — prebuilt demo knowledge bases for the dkb plugin
+
+commands:
+  list                        show the available demo knowledge bases
+  use <name> [--dir <path>]   copy one into your working directory
+                              (--force to overwrite an existing copy)
+  path <name> [--dir <path>]  print the hydrated copy's path
+
+The copy is yours: additions and corrections you make to it stay put and
+survive plugin updates. Explore it with the dkb command:
+
+  dkb --dir ./demo-lhc retrieve explore "your question"
+EOF
+}
+
+cmd_list() {
+  echo "Demo knowledge bases (hydrate one with: dkb-demo use <name>)"
+  echo
+  local name
+  for name in "${KB_NAMES[@]}"; do
+    [ -d "$KBS_ROOT/$name" ] || continue
+    echo "  $name"
+    echo "    $(kb_blurb "$name")"
+    echo "    $(kb_stats "$name")"
+    echo
+  done
+}
+
+cmd_use() {
+  local name="${1:-}"
+  [ -n "$name" ] || die 2 "'use' needs the name of a demo knowledge base" \
+    "run 'dkb-demo list' to see what is available"
+  shift
+  require_known_kb "$name"
+
+  local target="" force=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --dir)   [ $# -ge 2 ] || die 2 "--dir needs a path" "pass a directory, e.g. --dir ./my-demo"
+               target="$2"; shift 2 ;;
+      --force) force=1; shift ;;
+      *)       die 2 "unexpected argument: '$1'" "run 'dkb-demo use --help' for the accepted flags" ;;
+    esac
+  done
+  [ -n "$target" ] || target="./demo-$name"
+
+  if [ -e "$target" ] && [ "$force" -eq 0 ]; then
+    die 3 "'$target' already exists — refusing to overwrite it" \
+      "that copy is yours and may hold your own additions; use it as-is, pass --dir <path> for a second copy, or --force to replace it"
+  fi
+  [ "$force" -eq 1 ] && rm -rf "$target"
+
+  mkdir -p "$target"
+  cp -R "$KBS_ROOT/$name/." "$target/"
+  local resolved
+  resolved="$(cd "$target" && pwd)"
+
+  echo "Hydrated '$name' into $resolved"
+  echo "  $(kb_blurb "$name")"
+  echo
+  echo "This copy is yours. Anything you add or correct stays in that directory"
+  echo "and survives updates to the demo plugin."
+  echo
+  echo "Heads up before your first question: exploring reads every source in"
+  echo "full and sends them to Claude in one call — $(kb_stats "$name" | sed 's/.*· //')."
+  echo "It bills through your own Claude Code, not a separate account."
+  echo
+  echo "next: dkb --dir \"$resolved\" retrieve explore \"your question\""
+}
+
+cmd_path() {
+  local name="${1:-}"
+  [ -n "$name" ] || die 2 "'path' needs the name of a demo knowledge base" \
+    "run 'dkb-demo list' to see what is available"
+  shift
+  local target=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --dir) [ $# -ge 2 ] || die 2 "--dir needs a path" "pass a directory, e.g. --dir ./my-demo"
+             target="$2"; shift 2 ;;
+      *)     die 2 "unexpected argument: '$1'" "run 'dkb-demo --help' for the accepted flags" ;;
+    esac
+  done
+  known_kb "$name" || die 2 "no such demo knowledge base: '$name'" \
+    "use one of: $(printf '%s ' "${KB_NAMES[@]}" | sed 's/ $//')"
+  [ -n "$target" ] || target="./demo-$name"
+
+  [ -d "$target" ] || die 3 "'$name' has not been hydrated yet (nothing at $target)" \
+    "run 'dkb-demo use $name' first"
+  (cd "$target" && pwd)
+}
+
+case "${1:---help}" in
+  list)            shift; cmd_list "$@" ;;
+  use)             shift; cmd_use "$@" ;;
+  path)            shift; cmd_path "$@" ;;
+  -h|--help|help)  usage ;;
+  *)               echo "error: unknown command: '$1'" >&2
+                   echo "next: run 'dkb-demo --help' — valid commands are list, use, path" >&2
+                   exit 2 ;;
+esac
