@@ -118,3 +118,18 @@ The spec's "Testing & Evaluation" section is authoritative; highlights:
 - **Pre-verify functionality, no assumptions** — until the app is mature, always check before relying on a command (e.g. run `--help` first). Small cost, prevents derailing.
 - Evals frame: use the `/evaluating-ai-agents` skill's framing (tasks, trials, graders, transcripts, outcomes; capability vs. regression evals; grade what the agent produced, not the path it took; read the transcripts). Test cases derive from the UX flows.
 - Ethan is the sole user/designer; consult him for design decisions, proceed autonomously on execution.
+- **Do not use the `claude-api` skill** — it is currently fatally bugged. For
+  model IDs, pricing, or SDK questions use the `claude-code-guide` agent or web
+  search instead, and verify rather than recalling from memory.
+
+## Work in progress: demo knowledge base (delete this section when it lands)
+
+**Conditional — applies only if `SCRATCHPAD.md` exists at the repo root.** If it
+does, a multi-stage build is mid-flight and that file is its plan *and* its
+status. Read it before doing anything else in this repo: it carries the design
+decisions (already signed off by Ethan), the stage list, and an execution log
+whose **Resume pointer** says exactly where the work stopped. Update that log as
+you go — it is the handoff to your own future context.
+
+If `SCRATCHPAD.md` is absent, the work has landed and this section is stale;
+remove it.

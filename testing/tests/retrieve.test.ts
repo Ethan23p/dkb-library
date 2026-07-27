@@ -7,13 +7,15 @@
 
 import { test, expect } from "bun:test";
 import * as path from "node:path";
-import { runCli, makeSandbox, stageFixture, fileSha256 } from "./helpers";
+import { runCli, makeSandbox, stageFixture, fileSha256, CORPUS } from "./helpers";
 
 const HAS_TOKEN = !!process.env.CLAUDE_CODE_OAUTH_TOKEN;
-const SMALL_SLUG = "flf-appendices"; // ~1.2k words — cheapest real source
-// A query with deliberately zero coverage in an LHC/competition-logistics KB:
+const SMALL_SLUG = "airways-sabre"; // 834 words — cheapest real source
+// The two fixture corpora are deliberately unrelated, so a question about one
+// has provably zero coverage in a KB built from the other. This KB is SABRE;
+// the query is LHC:
 const UNRELATED_QUERY =
-  "How did the SABRE airline reservation system transform 1960s mainframe computing?";
+  "What did the LHC safety assessments conclude about the risk of microscopic black holes?";
 
 test("ret-1: retrieve on an empty KB exits 4 and says how to add a source", () => {
   const dir = makeSandbox();
@@ -39,7 +41,7 @@ test.skipIf(!HAS_TOKEN)(
   () => {
     const dir = makeSandbox();
     expect(runCli(["init"], { cwd: dir }).exitCode).toBe(0);
-    const importPath = stageFixture(SMALL_SLUG, dir);
+    const importPath = stageFixture(SMALL_SLUG, dir, CORPUS);
     expect(runCli(["add-source", "--json-import", importPath], { cwd: dir }).exitCode).toBe(0);
 
     const kbPath = path.join(dir, "kb.sqlite");

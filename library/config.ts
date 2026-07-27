@@ -14,7 +14,7 @@ import { existsSync, readFileSync } from "node:fs";
 import * as path from "node:path";
 
 /** Library fallback when the engine declares no model. */
-export const DEFAULT_EXPLORE_MODEL = "claude-haiku-4-5";
+export const DEFAULT_EXPLORE_MODEL = "claude-sonnet-5";
 
 export const CONFIG_FILENAME = "config.yml";
 

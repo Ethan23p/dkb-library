@@ -35,9 +35,11 @@ const exitCode = await runCli(
     title: "Epistack",
     invocation: "dkb", // the command name the plugin puts on PATH
     conventionSeed: CONVENTION_SEED,
-    // Instantiation decision, written into config.yml at init: Haiku 4.5 is
-    // fast and cheap, and the v0.2.1 corpus is small enough to stuff whole.
-    exploreModel: "claude-haiku-4-5",
+    // Instantiation decision, written into config.yml at init: Sonnet 5 is the
+    // default trade — strong enough for synthesis over a stuffed corpus without
+    // the cost of Opus. Individual knowledge bases override it in their own
+    // config.yml (the demo KBs run Opus 5).
+    exploreModel: "claude-sonnet-5",
   },
   process.argv.slice(2),
 );

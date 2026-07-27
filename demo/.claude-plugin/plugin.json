@@ -1,0 +1,11 @@
+{
+  "name": "dkb-demo",
+  "displayName": "Durable Knowledge Base — Demo Corpora",
+  "version": "0.2.1",
+  "description": "Pre-ingested demo knowledge bases for the dkb plugin: the LHC micro-black-hole safety debate, and the SABRE airline reservation system. Hydrate one into your working directory and start asking questions.",
+  "author": {
+    "name": "Ethan Porter"
+  },
+  "repository": "https://github.com/Ethan23p/dkb-library",
+  "keywords": ["knowledge-base", "provenance", "demo", "epistemology"]
+}
