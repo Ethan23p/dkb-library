@@ -8,10 +8,15 @@ matching conditional section that goes away with it.
 
 ## STATUS — read this first
 
-> **Resume pointer:** Stage 1 **complete and committed**. Stage 2 is blocked on
-> one decision from Ethan: the measured cost of an LHC explore is **~$1.30**,
-> not the sub-dollar figure D2b assumed. See "Open decision: LHC demo cost"
-> below — do not write the Stage 2 notice wording until it is settled.
+> **Resume pointer:** Stages 1, 2 and 3 are **complete and committed**; the cost
+> question is **settled** (Ethan chose C+D — see below). Paused at Ethan's
+> request 2026-07-27 with a clean tree.
+>
+> **Next up: Stage 4, the documentation sweep** — nothing blocks it. One thing
+> to decide during it: whether the docs carry an example explore. That would be
+> generative content, and **Ethan has said he will generate it on his own
+> machine using Opus** rather than have it produced here. Ask him for it when
+> the docs need it; do not fabricate one.
 
 If you are a fresh instance picking this up: the decisions below are **settled
 and signed off** — do not relitigate them, execute them. Work one stage at a
@@ -23,8 +28,8 @@ pointer above, then check in with Ethan if the stage is marked ✋.
 | 0 — Plan & decisions | ✅ done | Decisions recorded below; open questions all resolved 2026-07-27 |
 | 0b — Pre-tweaks | ✅ done | Default explore model Haiku 4.5 → **Sonnet 5** (`library/config.ts`, `engines/epistack/main.ts`); `claude-api` skill banned in `CLAUDE.md`; this status block added |
 | 1 — Skeleton + `demo/build.ts` | ✅ done | Both KBs built, hash-verified, committed. Suite green (12/12). Cost measured — see open decision |
-| 2 — Hydration + switching UX ✋ | 🚧 blocked | needs the LHC-cost decision first; still checks in with Ethan at the end |
-| 3 — Skill-level default wiring | ⬜ not started | |
+| 2 — Hydration + switching UX ✋ | ✅ done | `dkb-demo` wrapper + demo skill + marketplace entry; both manifests pass `claude plugin validate` |
+| 3 — Skill-level default wiring | ✅ done | "Playtesting context" section added to `skills/dkb/SKILL.md` |
 | 4 — Documentation sweep | ⬜ not started | |
 | 5 — Verification via harness ✋ | ⬜ not started | ends with Ethan's manual marketplace-install eyeball |
 
@@ -296,7 +301,41 @@ Also in this stage:
 
 Nothing outstanding. Awaiting the green light to start Stage 1.
 
-## Open decision: LHC demo cost (raised 2026-07-27, Stage 1)
+## RESOLVED: LHC demo cost — Ethan chose (c) + (d), 2026-07-27
+
+**LHC stays the default and moves to Sonnet 5; SABRE keeps Opus 5** (it is small
+enough to afford it). **Prompt caching is disabled** for explore calls. Measured
+result, caching off:
+
+| KB | Model | Input tokens | Wall clock | Cost/question |
+|---|---|---|---|---|
+| **lhc** | Sonnet 5 | 186,907 | ~24 s | **$0.72** (was $1.30) |
+| **saber** | Opus 5 | 11,548 | ~20 s | **$0.06** (was $0.10) |
+
+`DISABLE_PROMPT_CACHING=1` is a real, confirmed win: with it, the whole context
+bills as ordinary input tokens instead of 1-hour cache *writes*, and the SDK's
+own cost figure drops ~44%. Ethan's hunch that Anthropic manages the cache
+server-side turned out not to apply here — the reads never happen because each
+explore is a one-shot session in a throwaway config dir, so the write was paying
+for storage nothing could ever hit. Set in `library/inference.ts` with a comment
+saying when to revisit (if explores ever go multi-turn).
+
+**Caveat on the dollar figures.** They come from the SDK's `total_cost_usd`, and
+that number does **not** track the model — an identical LHC call reported $1.30
+on Opus 5 and $1.28 on Sonnet 5, which cannot both be right against published
+per-token prices. The *token counts* are hard facts and the *relative* effect of
+disabling caching is reproducible; treat the absolute dollars as indicative. By
+published pricing (Sonnet 5 introductory $2/MTok in, through 2026-08-31) an LHC
+question is nearer $0.40. Quote the higher figure if a figure is ever needed.
+
+**Cost warning dropped from the user-facing flow.** At well under Ethan's
+one-dollar bar it was disproportionate, and the SDK's dollar number is too
+unreliable to publish. What remains is the genuinely useful part, stated as
+plain feedback rather than a warning: every question reads all sources in full,
+and takes 20–25 s. `dkb-demo`'s `kb_stats()` is the single place those figures
+live.
+
+## Superseded: the original cost problem (raised 2026-07-27, Stage 1)
 
 D2b was written on an estimate — "well under a dollar", Ethan's sketch said
 ~$0.30. **Measured, it is ~$1.30 per LHC question.** The numbers below are read
@@ -416,3 +455,28 @@ surprised. Newest at the bottom.
   reverted and the file is byte-identical to HEAD.
   Sanity check passed: LHC explore returned `Coverage: full` with a genuinely
   strong synthesis and all five sources cited with correct provenance.
+- **2026-07-27 — Stages 2 & 3 (hydration UX, skills, cost resolution).**
+  Ethan chose (c)+(d) on the cost question; see the RESOLVED section above for
+  the settled numbers. `demo/build.ts` now carries a per-corpus `model` field
+  (lhc → Sonnet 5, saber → Opus 5) and both KBs were rebuilt and re-verified.
+  `library/inference.ts` sets `DISABLE_PROMPT_CACHING=1`.
+  Shipped: `demo/bin/dkb-demo` (`list`/`use`/`path`, `error:`/`next:` style,
+  exit codes 0/2/3, refuses to overwrite an existing copy);
+  `demo/skills/dkb-demo/SKILL.md`; a "Playtesting context" section in
+  `skills/dkb/SKILL.md`; and the second marketplace entry. Both manifests pass
+  `claude plugin validate`. Suite 12/12.
+  **Per Ethan's tweak, hydration is now Claude's job, not the playtester's** —
+  the demo skill has Claude ask permission before writing to their disk, naming
+  the real working directory, and the wrapper's output was rewritten to report
+  facts for relay rather than lecture the user.
+  **Bug found and fixed in my own Stage 1 code:** `setExploreModel` used
+  before/after string inequality to detect whether the regex matched, so once
+  lhc's model equalled the engine default the legitimate no-op rewrite was
+  misread as a missing `explore-model:` line and failed the build. It now tests
+  the pattern. Worth remembering: it only surfaced because a value changed to
+  match a default, which is exactly the case that guard was blind to.
+  **Confirmed no generative content ships in the demo KBs** — a full attribute
+  dump over both ledgers returns only `kb/*` bookkeeping and `source/*` fields
+  from the sidecars. The only generated prose in the repo remains the
+  pre-existing `docs/showcase/` eval transcripts, which are honest artifacts of
+  real runs.

@@ -4,7 +4,7 @@ paths:
   kb: kb.sqlite
   convention: convention.md
 inference:
-  explore-model: claude-opus-5
+  explore-model: claude-sonnet-5
 versions:
   dkb-library: 0.2.1
   kb-schema: 0.2.1

@@ -9,6 +9,11 @@
       "name": "dkb",
       "source": "./",
       "description": "Build and query a durable, append-only knowledge base that answers only from your own sources, with full provenance."
+    },
+    {
+      "name": "dkb-demo",
+      "source": "./demo",
+      "description": "Pre-ingested demo knowledge bases for dkb: the LHC micro-black-hole safety debate, and the SABRE airline reservation system. Install alongside dkb to try the system without assembling a corpus first."
     }
   ]
 }

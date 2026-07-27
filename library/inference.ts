@@ -150,6 +150,17 @@ export async function runExploreInference(
       CLAUDE_CODE_ENTRYPOINT: undefined,
       ANTHROPIC_API_KEY: undefined,
       CLAUDE_CONFIG_DIR: configDir,
+      // Every explore is a one-shot session in a throwaway config dir, so a
+      // prompt cache written here can never be read back — measured:
+      // cache_read_input_tokens is 0 on every call, including back-to-back
+      // ones over the same corpus. Left on, the SDK still writes the whole
+      // stuffed context to a 1-hour cache entry and bills the write premium
+      // for storage nothing will ever hit. Turning it off measured ~44%
+      // cheaper on a 187k-token corpus with no change in output quality.
+      //
+      // Revisit if explores ever become multi-turn or reuse a session — then
+      // the cache would start paying for itself and this should come out.
+      DISABLE_PROMPT_CACHING: "1",
     } as Record<string, string>,
   };
 

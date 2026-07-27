@@ -19,9 +19,8 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && p
 KBS_ROOT="$PLUGIN_ROOT/kbs"
 
 # --- Corpus catalogue -------------------------------------------------------
-# Cost and latency are MEASURED, not estimated (Agent SDK total_cost_usd; see
-# SCRATCHPAD.md). Re-measure and edit here if the corpora or the model change —
-# this is the single place the figures are stated.
+# Latency is MEASURED, not estimated. Re-measure and edit here if the corpora
+# or their models change — this is the single place the figures are stated.
 kb_blurb() {
   case "$1" in
     lhc)   echo "Could the LHC destroy the Earth? Five papers on micro-black-hole risk — including one that disputes the others' methodology." ;;
@@ -30,8 +29,8 @@ kb_blurb() {
 }
 kb_stats() {
   case "$1" in
-    lhc)   echo "5 sources · ~74k words · ~40-60s and ~\$1.30 of API-equivalent usage per question" ;;
-    saber) echo "5 sources · ~5k words · ~20s and ~\$0.10 of API-equivalent usage per question" ;;
+    lhc)   echo "5 sources · ~74k words · every question reads all of it, ~25s" ;;
+    saber) echo "5 sources · ~5k words · every question reads all of it, ~20s" ;;
   esac
 }
 KB_NAMES=(lhc saber)
@@ -116,13 +115,10 @@ cmd_use() {
 
   echo "Hydrated '$name' into $resolved"
   echo "  $(kb_blurb "$name")"
+  echo "  $(kb_stats "$name")"
   echo
-  echo "This copy is yours. Anything you add or correct stays in that directory"
-  echo "and survives updates to the demo plugin."
-  echo
-  echo "Heads up before your first question: exploring reads every source in"
-  echo "full and sends them to Claude in one call — $(kb_stats "$name" | sed 's/.*· //')."
-  echo "It bills through your own Claude Code, not a separate account."
+  echo "This copy belongs to the user: additions and corrections made to it stay"
+  echo "in that directory and survive updates to the demo plugin."
   echo
   echo "next: dkb --dir \"$resolved\" retrieve explore \"your question\""
 }

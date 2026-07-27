@@ -18,9 +18,9 @@
 //     copied into demo/ — the corpora already ship with the repo, and content
 //     lands verbatim inside the ledger regardless. The only new bytes here are
 //     the two kb.sqlite files.
-//   - The demo KBs run Opus 5 (see EXPLORE_MODEL below), which is a per-KB
-//     instantiation decision expressed exactly where CONTRACTS A4 puts it: the
-//     KB's own config.yml. The engine default stays Sonnet 5.
+//   - Each demo KB declares its own model, which is a per-KB instantiation
+//     decision expressed exactly where CONTRACTS A4 puts it: the KB's own
+//     config.yml. See the `model` field on each corpus below for the reasoning.
 //   - Verification is not optional. Every build re-derives each source's
 //     content hash from the fixture on disk and compares it against what the
 //     ledger stored. A demo KB that does not match its sources is not shippable.
@@ -41,9 +41,6 @@ const REPO_ROOT = path.resolve(import.meta.dir, "..");
 const CLI_ENTRY = path.join(REPO_ROOT, "engines", "epistack", "main.ts");
 const OUT_ROOT = path.join(REPO_ROOT, "demo", "kbs");
 
-/** The demo KBs buy answer quality at the judge's expense; sub-dollar, declared up front. */
-const EXPLORE_MODEL = "claude-opus-5";
-
 interface Corpus {
   /** Directory name under demo/kbs/, and the name users pass to `dkb-demo use`. */
   name: string;
@@ -51,18 +48,32 @@ interface Corpus {
   fixtures: string;
   /** One-line description, echoed at build time. */
   blurb: string;
+  /** Written into this KB's config.yml — a per-KB instantiation decision (A4). */
+  model: string;
 }
 
+// The demo runs on someone else's usage limit, so model choice is a budget
+// decision as much as a quality one. The corpora are two orders of magnitude
+// apart in size, so they get different answers:
+//
+//   lhc   — 187k tokens per question. On Opus 5 that measured $1.30 a question,
+//           which is too much to spend of a judge's allowance for a demo.
+//           Sonnet 5 is strong enough for synthesis over stuffed context and
+//           brings it back inside budget.
+//   saber — 11.5k tokens per question. Opus 5 costs about a dime here, so the
+//           corpus that is small enough to afford the best model gets it.
 const CORPORA: Corpus[] = [
   {
     name: "lhc",
     fixtures: path.join(REPO_ROOT, "testing", "fixtures", "corpus-lhc"),
     blurb: "LHC micro-black-hole safety — the risk-assessment literature",
+    model: "claude-sonnet-5",
   },
   {
     name: "saber",
     fixtures: path.join(REPO_ROOT, "testing", "fixtures", "corpus"),
     blurb: "SABRE — airline reservations and early commercial computing",
+    model: "claude-opus-5",
   },
 ];
 
@@ -90,18 +101,25 @@ function run(args: string[], cwd: string): void {
   }
 }
 
-/** Rewrite the one config.yml line that differs from the engine default. */
+/**
+ * Pin this KB's explore-model in its own config.yml.
+ *
+ * The guard tests the pattern rather than comparing before/after: when a corpus
+ * asks for the same model the engine already defaults to, the rewrite is a
+ * legitimate no-op, and treating "text unchanged" as "line missing" would fail
+ * a perfectly good build.
+ */
 function setExploreModel(dir: string, model: string): void {
   const configPath = path.join(dir, "config.yml");
   const before = readFileSync(configPath, "utf8");
-  const after = before.replace(/^(\s+explore-model:\s*).*$/m, `$1${model}`);
-  if (after === before) {
+  const line = /^(\s+explore-model:\s*).*$/m;
+  if (!line.test(before)) {
     throw new Error(
-      `could not set explore-model in ${configPath} — the generated config.yml no longer ` +
-        `has an 'explore-model:' line; reconcile demo/build.ts with library/init.ts`,
+      `could not set explore-model in ${configPath} — the generated config.yml has no ` +
+        `'explore-model:' line; reconcile demo/build.ts with library/init.ts`,
     );
   }
-  writeFileSync(configPath, after);
+  writeFileSync(configPath, before.replace(line, `$1${model}`));
 }
 
 /** Every *.import.json in the fixture dir, in a stable order (so entry ids are deterministic). */
@@ -167,7 +185,7 @@ function build(corpus: Corpus): void {
   mkdirSync(outDir, { recursive: true });
 
   run(["init", "--dir", outDir], REPO_ROOT);
-  setExploreModel(outDir, EXPLORE_MODEL);
+  setExploreModel(outDir, corpus.model);
 
   const expected: { title: string; hash: string }[] = [];
   for (const sidecar of imports) {
@@ -189,7 +207,7 @@ function build(corpus: Corpus): void {
   const words = expected.length;
   console.log(
     `  built  ${path.relative(REPO_ROOT, outDir)} — ${words} sources, ` +
-      `${(bytes / 1024).toFixed(0)} KiB, explore-model ${EXPLORE_MODEL}`,
+      `${(bytes / 1024).toFixed(0)} KiB, explore-model ${corpus.model}`,
   );
 }
 

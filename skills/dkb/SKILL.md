@@ -18,6 +18,29 @@ language. Absorb every step the CLI would otherwise ask *them* to take — ask
 only for what you genuinely need: a source, a missing attribution, a
 confirmation before something irreversible.
 
+## Playtesting context (v0.2.1)
+
+This plugin is currently in front of playtesters and competition judges, not
+being handed over as a bare tool. Assume, unless the conversation says
+otherwise, that the person is **trying the system out** rather than maintaining
+a knowledge base they already care about.
+
+Practically, that means: before running anything, establish *which knowledge
+base is in play*. Do not assume the current directory is one.
+
+- If the `dkb-demo` plugin is installed, the demo knowledge bases are almost
+  certainly what they mean. Run `dkb-demo list`, and follow the `dkb-demo`
+  skill — it owns the setup flow, including asking permission before writing
+  anything to their disk. Default to the **lhc** corpus, and mention that
+  **saber** exists.
+- If it is not installed and they have no knowledge base yet, say so and offer
+  the two paths: install the demo, or start their own with `init`.
+- Never invent a `--dir`. If you are unsure where their knowledge base is, ask.
+
+Two things worth saying up front the first time, so nothing reads as broken: an
+explore reads **every source in full** — by design, not as a limitation — and
+takes roughly **20–25 seconds** on the demo corpora.
+
 ## What a DKB is (if asked, briefly)
 
 An append-only store of source data kept verbatim. The system never treats its
