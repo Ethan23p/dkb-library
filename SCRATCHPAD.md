@@ -8,15 +8,18 @@ matching conditional section that goes away with it.
 
 ## STATUS — read this first
 
-> **Resume pointer:** Stages 1, 2 and 3 are **complete and committed**; the cost
-> question is **settled** (Ethan chose C+D — see below). Paused at Ethan's
-> request 2026-07-27 with a clean tree.
+> **Resume pointer:** Stages 1–4 are **complete and committed**; the cost
+> question is **settled** (Ethan chose C+D — see below).
 >
-> **Next up: Stage 4, the documentation sweep** — nothing blocks it. One thing
-> to decide during it: whether the docs carry an example explore. That would be
-> generative content, and **Ethan has said he will generate it on his own
-> machine using Opus** rather than have it produced here. Ask him for it when
-> the docs need it; do not fabricate one.
+> **Next up: Stage 5, verification via the harness** — nothing blocks it. It
+> needs a `plugins` pass-through in `testing/harness/{types,runtime}.ts` and a
+> new `testing/evals/eval_demo.ts`, then ends with **Ethan's manual
+> `/plugin marketplace add` eyeball**, which the harness cannot cover.
+>
+> **Two things for Ethan** (see "FOR ETHAN" below): the published write-up
+> `docs/index.md` still shows a one-plugin install and is Logseq-owned, so it
+> needs his edit there; and the docs carry no worked example explore, which he
+> would generate on Opus if he wants one.
 
 If you are a fresh instance picking this up: the decisions below are **settled
 and signed off** — do not relitigate them, execute them. Work one stage at a
@@ -30,7 +33,7 @@ pointer above, then check in with Ethan if the stage is marked ✋.
 | 1 — Skeleton + `demo/build.ts` | ✅ done | Both KBs built, hash-verified, committed. Suite green (12/12). Cost measured — see open decision |
 | 2 — Hydration + switching UX ✋ | ✅ done | `dkb-demo` wrapper + demo skill + marketplace entry; both manifests pass `claude plugin validate` |
 | 3 — Skill-level default wiring | ✅ done | "Playtesting context" section added to `skills/dkb/SKILL.md` |
-| 4 — Documentation sweep | ⬜ not started | |
+| 4 — Documentation sweep | ✅ done | All repo docs updated. **`docs/index.md` deliberately untouched — needs Ethan's edit in Logseq; wording drafted below** |
 | 5 — Verification via harness ✋ | ⬜ not started | ends with Ethan's manual marketplace-install eyeball |
 
 **Ledger conventions.** One line per stage, appended under "Execution log" at
@@ -411,6 +414,40 @@ normalization on commit), not about the user. A macOS or Linux judge follows the
 identical path, and there is no "rely on the pre-existing installs" fallback
 needed — there is only one path.
 
+## FOR ETHAN — the one doc edit I did not make
+
+`docs/index.md` is a Logseq export with an explicit marker: *"replace everything
+BELOW this comment with a fresh export."* Its install section is yours, in your
+voice, and editing it here would be overwritten on the next refresh. So the
+published write-up still shows a one-plugin install and does not mention the
+demo — **which is the judges' entry point.** Worth fixing before submission.
+
+Suggested replacement for the *"Try it as a Claude Plugin"* block on the Logseq
+page — adjust to taste, it is your prose:
+
+> - Installation: `https://github.com/Ethan23p/dkb-library/blob/main/docs/PLAYTESTING.md`
+> - In Claude Code, run these 4 commands, in sequence:
+>   >/plugin marketplace add Ethan23p/dkb-library
+>   >/plugin install dkb@ethan-dkb
+>   >/plugin install dkb-demo@ethan-dkb
+>   >/reload-plugins
+> - The second install is the demo: two knowledge bases that are already built,
+>   so you can ask a real question about real sources within a minute rather
+>   than assembling a corpus first. One is the LHC micro-black-hole safety
+>   debate — five papers that genuinely disagree with each other; the other is
+>   how American Airlines put computers in front of hourly reservation staff in
+>   1960. Claude will offer you one and ask before writing anything to your disk.
+> - Once it's installed, the intension is that Claude will straightforwardly
+>   figure out the tool and guide you through all operations, seamlessly.
+>   Further instruction in the `PLAYTESTING.md`, linked above.
+
+Also still open, from the resume pointer: **do the docs want a worked example
+explore?** They currently do not contain one — the seed questions describe the
+*shape* of a good answer (cites entries, surfaces disagreement, refuses when
+uncovered) without fabricating one. If you want a real transcript in
+`PLAYTESTING.md` or the write-up, generate it on your machine with Opus and hand
+it over; nothing here will invent one.
+
 ## Execution log
 
 Append one entry per completed stage: what was built, what was verified, what
@@ -480,3 +517,24 @@ surprised. Newest at the bottom.
   from the sidecars. The only generated prose in the repo remains the
   pre-existing `docs/showcase/` eval transcripts, which are honest artifacts of
   real runs.
+- **2026-07-27 — Stage 4 (documentation sweep).** `docs/PLAYTESTING.md`
+  restructured around the demo: install both plugins → ask something in the
+  first minute → *then* bring your own sources. Its three seed questions are
+  chosen to expose different properties (well-covered, genuinely disputed,
+  not covered at all) and describe the *shape* of a good answer rather than
+  quoting a fabricated one. `README.md` gained the second install line, a
+  `demo/` layout entry, and a status line that no longer says the demo is
+  outstanding. `docs/PLUGIN.md` gained a "Two plugins, one marketplace" section
+  and a "why the demo hydrates" subsection tying the copy back to the
+  pre-existing ephemerality rule. New `demo/README.md` — maintainer-facing:
+  corpora table with models, layout, rebuild instructions, and the note that
+  `bin/dkb-demo`'s `kb_stats()` is the single source of the measured figures.
+  `engines/epistack/README.md` had a stale "empty until the v0.2.1 build loop
+  begins" line, now corrected. `CLAUDE.md`'s roadmap line no longer lists the
+  demo KB as remaining.
+  **Deliberately not edited: `docs/index.md`.** It is a Logseq export with a
+  "replace below this line" marker and it is Ethan's own prose, so an edit here
+  would be both overwritten and out of place. Replacement wording drafted for
+  him above. This matters more than it sounds — index.md is the *published*
+  write-up and therefore the judges' entry point, and it currently documents a
+  one-plugin install with no demo.

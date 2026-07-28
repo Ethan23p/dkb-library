@@ -25,6 +25,7 @@ included.
 - `library/` — all mechanisms (ledger, ingestion, retrieval, inference, CLI, …)
 - `engines/epistack/` — the first engine instantiation (thin; owns the KB)
 - `skills/`, `bin/`, `.claude-plugin/` — the Claude Code plugin (`docs/PLUGIN.md`)
+- `demo/` — a second plugin: two prebuilt knowledge bases (`demo/README.md`)
 - `docs/CONTRACTS.md` — interface decisions (grammar, exit codes, schemas)
 - `testing/` — logic tests, agentic evals, and the eval harness (`testing/harness/DESIGN.md`)
 
@@ -36,10 +37,18 @@ rather than running commands yourself:
 ```
 /plugin marketplace add Ethan23p/dkb-library
 /plugin install dkb@ethan-dkb
+/plugin install dkb-demo@ethan-dkb
 ```
 
-See [`docs/PLAYTESTING.md`](docs/PLAYTESTING.md) to try it, and
-[`docs/PLUGIN.md`](docs/PLUGIN.md) for how the packaging works.
+The second install is optional but recommended: it ships two prebuilt knowledge
+bases — five papers on LHC micro-black-hole risk that genuinely disagree with
+each other, and the story of SABRE putting computers in front of hourly staff in
+1960 — so you can ask a real question about real sources instead of starting
+from an empty system.
+
+See [`docs/PLAYTESTING.md`](docs/PLAYTESTING.md) to try it,
+[`demo/README.md`](demo/README.md) for what the demo corpora are and how they
+are built, and [`docs/PLUGIN.md`](docs/PLUGIN.md) for how the packaging works.
 
 ## Developing
 
@@ -55,5 +64,6 @@ bun engines/epistack/main.ts init --dir <path>
 ```
 
 Current status: **v0.2.1 walking skeleton — complete** (suite green, scenario
-passes end-to-end), now packaged as a plugin. Remaining for v0.2.1: a demo
-knowledge base.
+passes end-to-end), packaged as a plugin, with prebuilt demo knowledge bases
+shipping alongside it. Next: v0.2.2 — robust definitions, error handling, full
+AI-legible CLI polish, and graph search.

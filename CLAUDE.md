@@ -66,7 +66,7 @@ Entities (each specced at *platonic* / *v0.2.1* / *v0.2.2* levels in the spec):
 
 **v0.2.1 — walking skeleton (DOING).** A sparse TypeScript program: most entities and capabilities exist but shallow. Source data is already-processed `.md`/`.txt`; entity-boundary compromises are acceptable (remedied in v0.2.2). Done means: the walking-skeleton scenario runs end-to-end and phase-1 test cases pass.
 
-Roadmap position: the walking-skeleton done-criteria are **met** — phase-1 suite green, scenario passing end-to-end. Also landed: the Smart-Interface Agent as a skill, the plugin access path, `--help` and `--verbose`, and the engine's own `config.yml`. Remaining for v0.2.1: a demo knowledge base (Ethan). Epistack submission is ongoing — the Alpha is in, and work continues toward full v0.2.1.
+Roadmap position: the walking-skeleton done-criteria are **met** — phase-1 suite green, scenario passing end-to-end. Also landed: the Smart-Interface Agent as a skill, the plugin access path, `--help` and `--verbose`, the engine's own `config.yml`, and the demo knowledge bases as a second plugin (`demo/`). Epistack submission is ongoing — the Alpha is in, and work continues toward full v0.2.1.
 
 **v0.2.2 — prototype**: robust definitions, error handling, full AI-legible CLI polish (did-you-mean, `intro`, complete `--json` coverage), graph search. Done means phase-2 test cases pass.
 
