@@ -29,15 +29,21 @@ export interface CliResult {
  * Run the CLI as a subprocess. Red-first guard: if the entry point doesn't exist
  * yet, fail loudly with the reason — that is the correct day-one red.
  */
-export function runCli(args: string[], opts: { cwd: string }): CliResult {
+export function runCli(
+  args: string[],
+  opts: { cwd: string; env?: Record<string, string | undefined> },
+): CliResult {
   if (!existsSync(CLI_ENTRY)) {
     throw new Error(
       `engine entry point not found: ${CLI_ENTRY} — check DKB_CLI_ENTRY, or that the repo is complete (CONTRACTS D1)`,
     );
   }
+  // `env` entries override the inherited environment; an explicit `undefined`
+  // unsets a variable, which is how the auth tests simulate a machine that has
+  // no credential without disturbing the repo's own .env.
   const proc = Bun.spawnSync(["bun", CLI_ENTRY, ...args], {
     cwd: opts.cwd,
-    env: { ...process.env },
+    env: { ...process.env, ...(opts.env ?? {}) },
     stdout: "pipe",
     stderr: "pipe",
   });

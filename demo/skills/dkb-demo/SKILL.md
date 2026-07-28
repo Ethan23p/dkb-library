@@ -68,6 +68,35 @@ different flavour of interesting and some people will prefer it:
 Switching is another `dkb-demo use <name>`, with the same ask-first courtesy.
 Both can exist side by side; they are separate directories.
 
+## Step 2.5 — the one piece of setup that is not automatic
+
+Exploring makes a real inference call, which needs a credential the plugin
+cannot supply for them. Check before the first explore rather than letting them
+hit an error: if `CLAUDE_CODE_OAUTH_TOKEN` is not set and there is no `.env` in
+the directory they are working in, this needs doing once.
+
+Frame it honestly — it is the one rough edge in the setup, and being logged into
+Claude Code genuinely does not cover it (Anthropic does not let external
+programs use `/login` credentials):
+
+> Before the first question I need to sort out one thing: the knowledge base
+> makes its own call to Claude, and it needs its own token — being logged in
+> here doesn't cover it. It's two commands in your terminal, once.
+
+**They run both commands themselves.** `claude setup-token` opens a browser flow
+you cannot drive, and the token it prints must not come back through this
+conversation — it is tied to their subscription and would end up in the
+transcript. Give them:
+
+```
+claude setup-token
+echo 'CLAUDE_CODE_OAUTH_TOKEN=<the token it printed>' > .env
+```
+
+Tell them what the second line makes: a file holding a credential, in the folder
+they are in, to be treated like a password. Then carry on and run the explore
+for them.
+
 ## Step 3 — explore, and set expectations first
 
 Explore with the `dkb` command, pointed at the hydrated copy:
@@ -124,7 +153,8 @@ These make the system look like itself. Offer a couple; do not read the list out
 ## When something goes wrong
 
 Every failure prints an `error:` line and a `next:` line; follow the `next:`
-line, it is written for you. Exit `8` means they are not logged into Claude
-Code — tell them to log in and retry, and do **not** answer the question
-yourself in the meantime. Exit `3` from `dkb-demo use` means the copy already
-exists, which is usually good news.
+line, it is written for you. Exit `8` is the credential from step 2.5 — it does
+**not** mean they are logged out of Claude Code, and telling them to log in
+sends them in a circle. Walk them through `setup-token` instead, and do **not**
+answer the question yourself in the meantime. Exit `3` from `dkb-demo use` means
+the copy already exists, which is usually good news.

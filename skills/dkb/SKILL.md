@@ -141,9 +141,35 @@ or none found here) · `4` empty knowledge base · `5` validation · `6` entry n
 found · `7` forbidden (tried to modify immutable content) · `8` no inference
 credential.
 
-## Auth
+## Auth — one-time setup, and it is not automatic
 
-`retrieve explore` runs a real inference call and needs
-`CLAUDE_CODE_OAUTH_TOKEN` in the environment — free if the user is logged into
-Claude Code on this machine. On exit `8`, tell them to log into Claude Code and
-retry; do not answer the question yourself in the meantime.
+`retrieve explore` makes a real inference call and needs
+`CLAUDE_CODE_OAUTH_TOKEN`. **Being logged into Claude Code does not cover this,
+and cannot be made to** — Anthropic does not permit external programs to use
+`/login` credentials, and the token is withheld from the environment of commands
+you run, so it never reaches the CLI. Exit `8` means the credential is genuinely
+absent, not that something is misconfigured.
+
+The credential is looked for in two places, in order: the environment, then a
+`.env` file **in the working directory** you run the command from. Not in the
+knowledge base — a knowledge base gets copied and shared, and a secret inside
+one would travel with it.
+
+On exit `8`, walk them through it once. **They must run `claude setup-token`
+themselves**, in their own terminal: it opens a browser flow you cannot drive.
+Then it prints a token.
+
+**Do not ask them to paste the token to you.** It is a long-lived credential
+tied to their subscription, and anything pasted into this conversation is in the
+transcript. Give them the line to run in their own terminal instead:
+
+```
+echo 'CLAUDE_CODE_OAUTH_TOKEN=<the token it printed>' > .env
+```
+
+Say plainly what that file is: their credential, in the directory they are
+working in, to be treated like a password and not committed to a repository.
+Then retry the command for them.
+
+Until it works, **do not answer their question from your own knowledge** — say
+the knowledge base cannot be reached yet and finish the setup.

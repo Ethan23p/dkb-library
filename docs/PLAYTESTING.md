@@ -11,6 +11,35 @@ once you have seen what the system does.
 
 - [Claude Code](https://claude.com/claude-code), logged in.
 - [Bun](https://bun.sh) installed (`bun --version` should print something).
+- A Claude Pro, Max, Team or Enterprise plan — the knowledge base answers
+  questions by making its own call to Claude, on your subscription.
+
+### One piece of setup, and it is genuinely necessary
+
+The knowledge base makes its **own** call to Claude rather than borrowing this
+conversation's, so it needs its own token. Being logged into Claude Code does
+not cover it: Anthropic does not allow programs to use `/login` credentials, so
+there is no way around this and no way for us to do it for you.
+
+Run this in your terminal, once:
+
+```
+claude setup-token
+```
+
+It opens a browser, and prints a token when you approve. Put that token in a
+`.env` file in whatever folder you'll be working in:
+
+```
+echo 'CLAUDE_CODE_OAUTH_TOKEN=<the token it printed>' > .env
+```
+
+**Treat that file like a password** — it is a long-lived credential tied to your
+subscription. Don't commit it, and don't paste the token into a chat.
+
+If you skip this, everything still installs and the knowledge base still builds;
+the first question you ask exits with `no inference auth token found` and tells
+you this. Claude will walk you through it at that point.
 
 ## Install
 

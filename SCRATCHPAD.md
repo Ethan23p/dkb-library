@@ -8,18 +8,18 @@ matching conditional section that goes away with it.
 
 ## STATUS — read this first
 
-> **Resume pointer:** Stages 1–4 are **complete and committed**; the cost
-> question is **settled** (Ethan chose C+D — see below).
+> **Resume pointer:** Stages 1–6 are **complete**. The auth question is settled
+> and implemented (CONTRACTS **A6**); `docs/index.md` was updated by Ethan
+> himself (`57bff11`). Phase-1 suite green at 15/15.
 >
-> **Next up: Stage 5, verification via the harness** — nothing blocks it. It
-> needs a `plugins` pass-through in `testing/harness/{types,runtime}.ts` and a
-> new `testing/evals/eval_demo.ts`, then ends with **Ethan's manual
-> `/plugin marketplace add` eyeball**, which the harness cannot cover.
->
-> **Two things for Ethan** (see "FOR ETHAN" below): the published write-up
-> `docs/index.md` still shows a one-plugin install and is Logseq-owned, so it
-> needs his edit there; and the docs carry no worked example explore, which he
-> would generate on Opus if he wants one.
+> **Outstanding, in priority order:**
+> 1. **Intermittent malformed verdict** — a real product bug the rehearsal
+>    caught, not an eval artifact. Needs Ethan's pick between two fixes; see the
+>    NEW section below. This is the one that hurts a judge's first impression.
+> 2. **Ethan's manual `/plugin marketplace add` eyeball** — the only thing the
+>    harness cannot cover.
+> 3. The docs still carry no worked example explore. Ethan would generate one on
+>    Opus if he wants one; nothing here will fabricate it.
 
 If you are a fresh instance picking this up: the decisions below are **settled
 and signed off** — do not relitigate them, execute them. Work one stage at a
@@ -34,7 +34,8 @@ pointer above, then check in with Ethan if the stage is marked ✋.
 | 2 — Hydration + switching UX ✋ | ✅ done | `dkb-demo` wrapper + demo skill + marketplace entry; both manifests pass `claude plugin validate` |
 | 3 — Skill-level default wiring | ✅ done | "Playtesting context" section added to `skills/dkb/SKILL.md` |
 | 4 — Documentation sweep | ✅ done | All repo docs updated. **`docs/index.md` deliberately untouched — needs Ethan's edit in Logseq; wording drafted below** |
-| 5 — Verification via harness ✋ | 🟡 built, 19/20 gates green | `eval_demo.ts` + `plugins`/`skills` pass-throughs done. **Red on one gate for a real reason — see BLOCKING below.** Ethan's manual marketplace eyeball still outstanding |
+| 5 — Verification via harness ✋ | ✅ built | `eval_demo.ts` + `plugins`/`skills` pass-throughs. Found the auth blocker and a flag-order docs bug. Ethan's manual marketplace eyeball still outstanding |
+| 6 — OAuth token as the primary path | ✅ done | `resolveAuthToken`, CONTRACTS A6, `auth.test.ts`, both skills, docs. Suite 15/15 |
 
 **Ledger conventions.** One line per stage, appended under "Execution log" at
 the bottom as each completes: what was built, what was verified, anything
@@ -414,6 +415,90 @@ normalization on commit), not about the user. A macOS or Linux judge follows the
 identical path, and there is no "rely on the pre-existing installs" fallback
 needed — there is only one path.
 
+## Stage 6 — make the OAuth token a first-class path (DECIDED 2026-07-28)
+
+**Ethan's decision, after a research pass:** `CLAUDE_CODE_OAUTH_TOKEN` is the
+intended mechanism, and Anthropic deliberately does not allow external apps to
+piggyback on `/login` credentials — *including personal ones*. So option (5)
+(point at `~/.claude`) is off the table for good, and option (1) becomes the
+product's primary, supported path rather than a workaround.
+
+**The constraint that shapes the work** (verified experimentally, see
+AUTH-FINDING.md): Claude Code withholds the credential from Bash-tool
+subprocesses, so a token exported in the user's shell **does not reach a CLI the
+agent launches**. The engine must load it itself. "Support the token path" is
+therefore a real feature, not a copy edit.
+
+### Credential resolution — the design
+
+Order, first match wins:
+
+1. `CLAUDE_CODE_OAUTH_TOKEN` already in the process environment — covers a human
+   running the CLI directly in a terminal, and every developer/CI path.
+2. `.env` in the **process cwd** — Bun auto-loads this today, which is exactly
+   why every green test passes. Making it explicit turns an accident into a
+   contract.
+
+**Deliberately NOT the knowledge-base directory.** A KB is meant to be copied,
+shared, and hydrated; a credential living inside one would travel with it. The
+ws eval's KB-dir `.env` works only because its sandbox cwd *is* the KB dir.
+Worth stating in the contract so nobody "fixes" it later.
+
+Exit 8 stays exit 8 — the code is right, the *message* is wrong: it currently
+says "log into Claude Code," which we now know is insufficient and sends the
+user in a circle.
+
+### Stages
+
+| # | Stage | State |
+|---|---|---|
+| 6a | AUTH-FINDING.md becomes the decision record, not an open question | ✅ |
+| 6b | Library: explicit credential resolution + rewritten exit-8 message | ✅ |
+| 6c | CONTRACTS amendment (dated, Ethan-signed) for the credential contract | ✅ A6 |
+| 6d | Skills: both skills walk the judge through `setup-token`, with consent, never echoing the token | ✅ |
+| 6e | Docs: PLAYTESTING prerequisites, demo/README, wrapper output | ✅ |
+| 6f | Tests + evals: resolution-order test, exit-8 message test, eval_demo covers the auth step; suite green | ✅ |
+
+**Security rules for this work, non-negotiable:** never echo a token to stdout,
+a transcript, or a commit; anything written must be gitignored before it is
+written; the skill asks consent before writing a credential to the user's disk
+and says plainly what it is writing and where.
+
+## ✋ NEW — intermittent malformed verdict (found in Stage 6's eval, needs Ethan)
+
+The demo rehearsal caught a **real product bug**, unrelated to auth. The first
+LHC explore of the run failed:
+
+```
+Exit code 1
+error: inference returned a malformed verdict ('source_ids' must be an array of integer ids)
+next: re-run the explore; if it persists, report the query used as a bug against the library
+```
+
+The agent read the `next:` line, retried once, and got a clean `Coverage: full`
+answer — so the AI-legible CLI did its job and the run recovered. But this is a
+**judge's first question**, and a coin-flip stumble there is a bad first
+impression of a system whose whole pitch is reliability.
+
+The verdict comes back as free-form JSON that we validate by hand
+(`library/inference.ts`), so a model that decorates or reshapes the field slips
+through. Two candidate fixes:
+
+- **(a) Retry once inside the inference handler** on a schema violation. Small,
+  contained, and honest — the failure is transient by nature. Costs a second
+  full context-stuffed call when it triggers (~$0.70 on LHC), which is real
+  money for a retry.
+- **(b) Ask the SDK to enforce the schema.** `testing/harness/DESIGN.md:115`
+  records `outputFormat: { type: 'json_schema', schema }`, which returns
+  `structured_output` on the result message and **auto-retries on mismatch**.
+  That is the mechanism built for exactly this, and it moves the guarantee from
+  our hand-rolled validation to the provider. Bigger change; touches the one
+  place the SDK is configured.
+
+**Recommendation: (b)**, with (a) as the fallback if `outputFormat` turns out
+not to compose with how we call the SDK. Not in Stage 6's scope, so it is
+flagged rather than done — say the word and it becomes Stage 7.
+
 ## ✋ BLOCKING — two findings from Stage 5, both need Ethan
 
 Stage 5 did the job it was designed to do: a rehearsal with **no CLI preamble**
@@ -639,3 +724,35 @@ surprised. Newest at the bottom.
   identical in the output while quietly undoing the whole hydrate design.
   Generalizable: **an eval that greps the answer text can only ever confirm the
   model's fluency; gate on the action that produced it.**
+- **2026-07-28 — Stage 6 (OAuth token as the primary path).** Ethan's research
+  pass confirmed independently that Anthropic does not allow external apps to
+  use `/login` credentials, *including personal ones*, so the token stops being
+  a workaround and becomes the product's supported path.
+  Built: `resolveAuthToken()` in `library/inference.ts` — environment first,
+  then a `.env` in the process cwd, parsed explicitly rather than relying on
+  Bun's auto-load (which is why every green test passed while the installed path
+  was broken: the behaviour was an accident of the runtime, not a promise).
+  **The knowledge-base directory is deliberately not searched** — a KB is made
+  to be copied and shared, and a credential inside one would travel with it.
+  CONTRACTS **A6** records all of it, dated and attributed. Exit 8 kept; its
+  message rewritten, since telling the user to log in was the actual bug.
+  `testing/tests/auth.test.ts` pins the contract: no credential → 8, the message
+  names `setup-token` and not logging in, and a credential inside the KB dir is
+  ignored. Suite **15/15 in 12s**.
+  **A test I wrote and then deleted, deliberately.** The positive path (a `.env`
+  satisfies the check) can only be observed *after* the gate opens, which starts
+  a real inference call. It passed alone and timed out inside the suite; bounding
+  it by pointing `ANTHROPIC_BASE_URL` at a closed local port did not help — the
+  SDK retries with backoff and the suite went from 18s to 200s. Deleted rather
+  than left slow and flaky; the positive path is asserted in `eval_demo`, where
+  a real explore is already the point. Recorded because the instinct to "just
+  add a timeout" would quietly reintroduce it.
+  **UX judgment call, flagged to Ethan:** `claude setup-token` prints a
+  long-lived subscription credential, so both skills instruct the agent to have
+  the *user* run both commands in their own terminal and explicitly not paste
+  the token into the conversation, where it would land in the transcript. Costs
+  some of the "Claude absorbs the work" ergonomics; the right trade for a secret.
+  **Gate corrected after a run:** turn 4 expected the second KB to exist, but the
+  consent rule applies to switching too, so hydration takes two turns. The agent
+  had done exactly the right thing and the gate was wrong — split into ask-then-
+  confirm rather than weakening the assertion.

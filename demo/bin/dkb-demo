@@ -120,6 +120,10 @@ cmd_use() {
   echo "This copy belongs to the user: additions and corrections made to it stay"
   echo "in that directory and survive updates to the demo plugin."
   echo
+  echo "Exploring needs its own credential — a Claude Code login does not cover it."
+  echo "If 'retrieve explore' exits 8: run 'claude setup-token', then put"
+  echo "CLAUDE_CODE_OAUTH_TOKEN=<token> in a .env file in the working directory."
+  echo
   # Flags follow the command — the parser reads argv[1] as the command name and
   # rejects a leading flag with exit 2.
   echo "next: dkb retrieve explore \"your question\" --dir \"$resolved\""

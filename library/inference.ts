@@ -6,12 +6,15 @@
 // (provider = Agent-SDK subagent, structured JSON return). Consumers
 // (retrieval/synthesis) call `runExploreInference` and never see the SDK.
 //
-// v0.2.1: Agent-SDK only, authenticated by CLAUDE_CODE_OAUTH_TOKEN from env —
-// the user is assumed to be logged into Claude Code on this system. Plugin
-// generation is post-v0.2.
+// v0.2.1: Agent-SDK only, authenticated by CLAUDE_CODE_OAUTH_TOKEN — minted by
+// `claude setup-token` and supplied either in the environment or via a .env in
+// the working directory (A6, `resolveAuthToken`). Being logged into Claude Code
+// is NOT sufficient: Anthropic does not permit external programs to use /login
+// credentials, and the token is withheld from Bash-tool subprocesses anyway.
+// See AUTH-FINDING.md. Plugin generation is post-v0.2.
 
 import { query, type Options } from "@anthropic-ai/claude-agent-sdk";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { DkbError, ExitCode } from "./errors";
@@ -38,16 +41,74 @@ export interface ExploreVerdict {
   sourceIds: number[];
 }
 
-/** D9 + A3: no auth in env → exit 8 (AUTH) before any call is attempted. */
+/**
+ * Read `CLAUDE_CODE_OAUTH_TOKEN` out of a `.env` file, without pulling in a
+ * dependency or mutating anything else. Deliberately minimal: `KEY=VALUE`, one
+ * per line, `#` comments, optional surrounding quotes. Anything fancier belongs
+ * in a real dotenv library, and we do not need one for a single key.
+ */
+function tokenFromEnvFile(dir: string): string | null {
+  let text: string;
+  try {
+    text = readFileSync(path.join(dir, ".env"), "utf8");
+  } catch {
+    return null; // absent or unreadable is a normal case, not an error
+  }
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    const eq = line.indexOf("=");
+    if (eq === -1) continue;
+    if (line.slice(0, eq).trim() !== "CLAUDE_CODE_OAUTH_TOKEN") continue;
+    const value = line.slice(eq + 1).trim().replace(/^(['"])(.*)\1$/, "$2");
+    if (value) return value;
+  }
+  return null;
+}
+
+/**
+ * Resolve the inference credential (A6). Order, first match wins:
+ *
+ *   1. `CLAUDE_CODE_OAUTH_TOKEN` in the environment — a human running the CLI
+ *      from their own terminal, plus every developer and CI path.
+ *   2. `.env` in the **process cwd**.
+ *
+ * Step 2 is not redundant under Bun, which auto-loads `.env` into the
+ * environment — but relying on that made the behaviour an accident of the
+ * runtime rather than something the program promises. Reading it here makes it
+ * explicit, testable, and true under any runtime.
+ *
+ * The knowledge-base directory is deliberately NOT searched. A knowledge base
+ * is meant to be copied, hydrated and shared; a credential sitting inside one
+ * would travel with it. Keep secrets attached to the operator, not the data.
+ */
+export function resolveAuthToken(): string | null {
+  const fromEnv = process.env.CLAUDE_CODE_OAUTH_TOKEN;
+  if (fromEnv && fromEnv.trim() !== "") return fromEnv.trim();
+  return tokenFromEnvFile(process.cwd());
+}
+
+/**
+ * D9 + A3 + A6: no usable credential → exit 8 (AUTH) before any call is made.
+ *
+ * The message matters more than usual here. Being logged into Claude Code is
+ * *not* sufficient and never was: Anthropic does not let external programs use
+ * `/login` credentials, and Claude Code withholds `CLAUDE_CODE_OAUTH_TOKEN`
+ * from the environment of Bash-tool subprocesses — so a token exported in a
+ * shell does not reach a CLI that an agent launches. The old wording told
+ * people to log in, which sent them in a circle. See AUTH-FINDING.md.
+ */
 export function requireAuthToken(): void {
-  const token = process.env.CLAUDE_CODE_OAUTH_TOKEN;
-  if (!token || token.trim() === "") {
+  const token = resolveAuthToken();
+  if (!token) {
     throw new DkbError(
       ExitCode.AUTH,
-      "no inference auth token found (CLAUDE_CODE_OAUTH_TOKEN is not set)",
-      "log into Claude Code on this system, or set CLAUDE_CODE_OAUTH_TOKEN in the environment (e.g. via a .env file), then re-run",
+      "no inference auth token found (CLAUDE_CODE_OAUTH_TOKEN is not set, and no .env in this directory supplies it)",
+      "run 'claude setup-token' to mint a token, then write CLAUDE_CODE_OAUTH_TOKEN=<token> into a .env file in this directory and re-run. Being logged into Claude Code is not sufficient on its own",
     );
   }
+  // Carry a file-sourced token into the environment the SDK subprocess inherits.
+  process.env.CLAUDE_CODE_OAUTH_TOKEN = token;
 }
 
 /** Build the explore prompt: guidance + the query + every source in full. */

@@ -1,9 +1,26 @@
 # Auth finding — why `retrieve explore` exits 8 for a playtester
 
-Working document. Written 2026-07-28, revised the same day after a documentation
-pass and three experiments. Nothing here has been acted on in code:
-`library/inference.ts` is untouched. Delete this file when the question is
-settled.
+**RESOLVED 2026-07-28.** Kept as the decision record behind CONTRACTS amendment
+A6; this is the reasoning the amendment is too short to carry. Written the same
+day, revised twice — after a documentation pass and three experiments here, then
+after Ethan's own research pass.
+
+## Decision
+
+**`CLAUDE_CODE_OAUTH_TOKEN` is the primary supported path, not a fallback.**
+Ethan's research confirmed independently that Anthropic deliberately does not
+allow external applications to piggyback on `/login` credentials — *including
+personal ones* — so option (5) below is closed permanently rather than merely
+disfavoured.
+
+Implemented in `library/inference.ts` (`resolveAuthToken`): environment first,
+then a `.env` in the process cwd, never the knowledge-base directory. Exit 8
+retained; its message rewritten, because the old one told users to log in, which
+we now know is the one thing that cannot work. Pinned by
+`testing/tests/auth.test.ts` and CONTRACTS A6.
+
+The rest of this document is the evidence, kept because the reasoning is not
+re-derivable from the code.
 
 Related: `SCRATCHPAD.md` (BLOCKING section), commits `d1df195` / `d4c71a5`,
 CONTRACTS amendment A3 (exit 8 = AUTH), the D9 note in
@@ -143,22 +160,16 @@ JiT inference intact.
 (verified). Rejected by Ethan on boundary grounds, and it sits closest to the
 line the overview note draws. Recorded as considered, not recommended.
 
-## Recommendation
+## Outcome
 
-For the competition deadline: **(1)**, documented honestly as a one-time setup
-step, because it is the only option that both works today and preserves the
-boundary. It is two commands and a paste, and it should be the demo skill's job
-to walk the judge through it and explain what the token is.
+**(1) was chosen and is implemented** — see the Decision section at the top.
+`requireAuthToken()`'s message no longer tells the user to log in.
 
-For v0.2.2: **(4) deserves a real design conversation.** If the outer agent is
-the intended place for inference in this architecture, that is a cleaner answer
-than any credential plumbing — but it trades away instrumentation and moves a
-responsibility the spec currently assigns to the engine, so it is Ethan's call,
-not an implementation detail.
-
-Either way, `requireAuthToken()`'s message should change: it currently tells the
-user to "log into Claude Code," which we now know is **not sufficient** and will
-send them in a circle.
+**(4) remains open as a v0.2.2 design question**, and is worth revisiting on its
+merits rather than as an auth workaround. If the outer agent is the intended
+place for inference in this architecture, that is cleaner than any credential
+plumbing — but it trades away instrumentation and moves a responsibility the
+spec assigns to the engine, so it is a spec conversation, not a refactor.
 
 ## Still open
 

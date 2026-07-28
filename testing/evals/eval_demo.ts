@@ -10,7 +10,7 @@
 // Run: bun run eval:demo   (needs CLAUDE_CODE_OAUTH_TOKEN; ~$1, one LHC explore)
 
 import { createHash } from "node:crypto";
-import { readFile, readdir, stat } from "node:fs/promises";
+import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import * as path from "node:path";
 import { runScenario, type GateContext, type ScenarioDefinition } from "../harness/runtime";
 
@@ -64,6 +64,25 @@ if (!shippedLhcHash) {
   process.exit(2);
 }
 
+// A6: the engine resolves its credential from the environment or a `.env` in
+// the cwd — and Claude Code withholds the token from the environment of
+// commands the agent runs, so the sandbox needs the file. This stages the same
+// setup a playtester performs by hand with `claude setup-token`; it is exactly
+// the step this eval must not skip, since skipping it is what hid the bug.
+// The staged file lives in an OS temp sandbox and `.env` is gitignored at any
+// depth, so the token never enters the repo.
+if (!process.env.CLAUDE_CODE_OAUTH_TOKEN) {
+  console.error("error: CLAUDE_CODE_OAUTH_TOKEN is not set, so the explore turn cannot run");
+  console.error("next: run 'claude setup-token' and put it in the repo .env, then re-run");
+  process.exit(8);
+}
+const STAGING = path.join(import.meta.dir, "fixtures", "demo");
+await mkdir(STAGING, { recursive: true });
+await writeFile(
+  path.join(STAGING, ".env"),
+  `CLAUDE_CODE_OAUTH_TOKEN=${process.env.CLAUDE_CODE_OAUTH_TOKEN}\n`,
+);
+
 const turnDurations: number[] = [];
 const track = (ctx: GateContext) => turnDurations.push(ctx.lastTurn.durationMs);
 const elapsed = () => turnDurations.reduce((a, b) => a + b, 0);
@@ -73,6 +92,8 @@ let hydratedHash: string | null = null;
 
 const scenario: ScenarioDefinition = {
   name: "demo",
+  // Stages the credential the way a playtester would have set it up.
+  sandbox: { fixtures: STAGING },
   agent: {
     model: "claude-sonnet-5",
     // Deliberately minimal: a working directory and shell access, nothing about
@@ -176,6 +197,19 @@ const scenario: ScenarioDefinition = {
     },
     {
       user: "Actually, show me the other one — the airline story.",
+      gate: async (ctx) => {
+        track(ctx);
+        // Switching is still writing to their disk, so the consent rule applies
+        // again — which means hydration takes two turns, not one. An earlier
+        // version of this gate expected the copy to exist here and failed a run
+        // where the agent had done exactly the right thing.
+        ctx.assert(/\?/.test(ctx.lastTurn.assistantText), "asks before the second copy too");
+        const hydrated = await hydratedDirs(ctx.sandboxPath("."));
+        ctx.assert(hydrated.length === 1, "still only the first KB until they agree");
+      },
+    },
+    {
+      user: "Yes, please.",
       gate: async (ctx) => {
         track(ctx);
         const hydrated = await hydratedDirs(ctx.sandboxPath("."));

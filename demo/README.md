@@ -22,6 +22,19 @@ affordable, so it gets it. The model is a per-knowledge-base setting living in
 each KB's own `config.yml` — see amendment A4 in
 [`../docs/CONTRACTS.md`](../docs/CONTRACTS.md).
 
+## The credential
+
+Hydration is free, but exploring is not: the engine makes its own Agent-SDK
+call, which needs `CLAUDE_CODE_OAUTH_TOKEN` (`claude setup-token`), supplied
+either in the environment or via a `.env` in the working directory. A Claude
+Code login does **not** satisfy this and cannot be made to — see CONTRACTS
+amendment A6 and `AUTH-FINDING.md` for why, including the experiment showing the
+token is withheld from the environment of commands an agent runs.
+
+Practically, for the demo: `dkb-demo use <name>` always works; the first
+`retrieve explore` exits 8 until the token is in place. The `dkb-demo` skill
+walks the playtester through it before their first question.
+
 ## Layout
 
 ```

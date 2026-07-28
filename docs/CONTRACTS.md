@@ -138,8 +138,9 @@ auth path the eval harness already uses. Rationale: the spec defines v0.2.1 expl
 untestable, and the spec's own Ideation section blesses the OAuth-token path. The
 inference handler's *plugin generation* remains deferred to v0.2.2.
 
-- No auth in env → exit 8 (AUTH) with a message explaining how to provide it
-  (amendment A3; originally exit 3).
+- No usable credential → exit 8 (AUTH) with a message explaining how to provide
+  it (amendment A3; originally exit 3). Credential resolution order and the
+  reason a Claude Code login does not count are amendment A6.
 - Explore is strictly read-only over the KB (`ret-2`).
 - The model is **not** a library constant: the engine declares it and `init`
   writes it to `config.yml`, which the library reads back (amendment A4).
@@ -198,6 +199,19 @@ verified by sandbox snapshot around the walking skeleton.
   and `library/config.ts` reads it back at retrieval time. A missing file or key
   falls back to the library default, so knowledge bases created before the key
   existed keep working.
+- **A6 (2026-07-28, Opus — signed off by Ethan)**: the inference credential is
+  `CLAUDE_CODE_OAUTH_TOKEN`, minted by `claude setup-token`, and it is the
+  *primary supported path* rather than a fallback. Resolution order, first match
+  wins: (1) the process environment; (2) a `.env` in the **process cwd**. The
+  knowledge-base directory is deliberately not searched — a knowledge base is
+  meant to be copied and shared, and a credential inside one would travel with
+  it. **Being logged into Claude Code does not satisfy this and cannot be made
+  to**: Anthropic does not permit external programs to use `/login` credentials
+  (Agent SDK overview), and Claude Code withholds the token from the environment
+  of Bash-tool subprocesses, so a token exported in a shell never reaches a CLI
+  an agent launches (verified experimentally against a control). Exit 8's
+  message must therefore not tell the user to log in. Background, experiments
+  and the rejected alternatives: `AUTH-FINDING.md`.
 - **A5 (2026-07-23, Fable — signed off by Ethan)**: `--help` and `--verbose` join
   the global flags. Help is rendered from the capability declarations (each command
   declares a runnable `example`), so grammar and documentation cannot drift; it is
