@@ -115,6 +115,11 @@ export async function runScenario(def: ScenarioDefinition): Promise<ScenarioResu
     maxTurns: def.agent.maxTurnsPerMessage,
     maxBudgetUsd: def.agent.maxBudgetUsd,
     systemPrompt: def.agent.systemPrompt,
+    // Eval definitions name plugin directories; the SDK's config shape stays here.
+    plugins: def.agent.plugins?.map((p) => ({ type: "local" as const, path: path.resolve(p) })),
+    // Turning skills on is a separate switch from loading the plugin that
+    // carries them; the SDK wires the Skill tool itself when this is set.
+    skills: def.agent.skills,
     executable: "bun",
     abortController: abort,
     env: {

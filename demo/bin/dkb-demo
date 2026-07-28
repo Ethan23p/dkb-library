@@ -67,7 +67,7 @@ commands:
 The copy is yours: additions and corrections you make to it stay put and
 survive plugin updates. Explore it with the dkb command:
 
-  dkb --dir ./demo-lhc retrieve explore "your question"
+  dkb retrieve explore "your question" --dir ./demo-lhc
 EOF
 }
 
@@ -120,7 +120,9 @@ cmd_use() {
   echo "This copy belongs to the user: additions and corrections made to it stay"
   echo "in that directory and survive updates to the demo plugin."
   echo
-  echo "next: dkb --dir \"$resolved\" retrieve explore \"your question\""
+  # Flags follow the command — the parser reads argv[1] as the command name and
+  # rejects a leading flag with exit 2.
+  echo "next: dkb retrieve explore \"your question\" --dir \"$resolved\""
 }
 
 cmd_path() {

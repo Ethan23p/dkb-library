@@ -34,7 +34,7 @@ pointer above, then check in with Ethan if the stage is marked ✋.
 | 2 — Hydration + switching UX ✋ | ✅ done | `dkb-demo` wrapper + demo skill + marketplace entry; both manifests pass `claude plugin validate` |
 | 3 — Skill-level default wiring | ✅ done | "Playtesting context" section added to `skills/dkb/SKILL.md` |
 | 4 — Documentation sweep | ✅ done | All repo docs updated. **`docs/index.md` deliberately untouched — needs Ethan's edit in Logseq; wording drafted below** |
-| 5 — Verification via harness ✋ | ⬜ not started | ends with Ethan's manual marketplace-install eyeball |
+| 5 — Verification via harness ✋ | 🟡 built, 19/20 gates green | `eval_demo.ts` + `plugins`/`skills` pass-throughs done. **Red on one gate for a real reason — see BLOCKING below.** Ethan's manual marketplace eyeball still outstanding |
 
 **Ledger conventions.** One line per stage, appended under "Execution log" at
 the bottom as each completes: what was built, what was verified, anything
@@ -414,6 +414,77 @@ normalization on commit), not about the user. A macOS or Linux judge follows the
 identical path, and there is no "rely on the pre-existing installs" fallback
 needed — there is only one path.
 
+## ✋ BLOCKING — two findings from Stage 5, both need Ethan
+
+Stage 5 did the job it was designed to do: a rehearsal with **no CLI preamble**
+found two things that no amount of reading the code would have surfaced. Both
+are on the *playtester's* path, not the developer's, which is exactly why the
+existing suite is green and this is not.
+
+### Finding 1 — retrieval is broken for every playtester (blocking)
+
+**A judge who installs the plugins and asks a question gets exit 8.** Verified
+end to end, not inferred: hydrated `saber` into a directory with no `.env`, ran
+the documented command, got
+`error: no inference auth token found (CLAUDE_CODE_OAUTH_TOKEN is not set)`.
+
+The chain:
+
+1. `library/inference.ts:requireAuthToken()` hard-requires
+   `CLAUDE_CODE_OAUTH_TOKEN` in the environment and throws exit 8 before any
+   call is attempted.
+2. **Real Claude Code does not put that variable in the Bash tool's
+   environment.** Checked directly from a live session: absent. (The harness
+   already knew a version of this — the D9 note in `eval_walking_skeleton.ts`
+   — but it was recorded as an *eval-environment* quirk, and the same scrubbing
+   applies to the shipped product.)
+3. Every developer path masks it. `bun test`, `demo/build.ts` and the ws eval
+   all run with the repo's gitignored `.env` on the cwd, which Bun auto-loads.
+   The skill's claim that retrieval is "free if the user is logged into Claude
+   Code" is therefore untested by anything green.
+
+**The fix appears to be available and small.** `inference.ts` currently points
+`CLAUDE_CONFIG_DIR` at a throwaway temp dir, which discards the user's actual
+Claude Code credentials. Probed directly: with `CLAUDE_CONFIG_DIR` pointing at
+the real `~/.claude` and **no token set at all**, an Agent-SDK call authenticates
+and returns successfully. So the login the docs promise is sufficient really is
+sufficient — the engine is just refusing to use it.
+
+That touches CONTRACTS (A3 / exit-8 semantics, and the D9 auth decision), so
+**it is Ethan's call, not mine.** The shape of the question:
+
+- **(a)** Keep the token gate, but only as a *fallback* — try the user's real
+  config dir first, exit 8 only when neither works. Preserves the exit code's
+  meaning; the demo works for a logged-in judge.
+- **(b)** Drop `requireAuthToken()` entirely and let the SDK's own auth failure
+  surface as exit 8. Simpler, but the failure arrives later and less legibly.
+- **(c)** Leave the code and document the env var as a prerequisite. Cheapest,
+  but it puts a manual export in front of every judge — against the whole
+  "~5 min on a fresh machine" premise.
+
+My recommendation is **(a)**. It keeps A3 intact, needs no grammar change, and
+is the difference between the demo working and not working for its entire
+intended audience.
+
+### Finding 2 — the documented flag position exits 2 (fixed in docs; CLI is Ethan's call)
+
+`dkb --dir <path> retrieve explore "…"` — the form our wrapper, our skill and
+the plan itself all used — **fails with exit 2, `no command given`.** Only
+`dkb retrieve explore "…" --dir <path>` works. Confirmed against the engine
+directly, so it is the parser, not the bash wrapper, and it applies to `init`
+and `--json` too.
+
+CONTRACTS D2 says "Global flags (every command)" without pinning a position, so
+whether the parser or the documentation is wrong is a judgment call. **I fixed
+the documentation only** — the suffix form works either way, so this unbreaks
+the shipped instructions without foreclosing the other fix. `demo/bin/dkb-demo`,
+both skills now teach the working form and say plainly what the other one does.
+
+Worth noting in its favour: the eval agent hit this, read the `error:`/`next:`
+lines, moved the flag and carried on within one turn. The AI-legible CLI
+absorbed a real papercut — but a judge reading our docs would still have typed
+the broken form first.
+
 ## FOR ETHAN — the one doc edit I did not make
 
 `docs/index.md` is a Logseq export with an explicit marker: *"replace everything
@@ -537,4 +608,29 @@ surprised. Newest at the bottom.
   would be both overwritten and out of place. Replacement wording drafted for
   him above. This matters more than it sounds — index.md is the *published*
   write-up and therefore the judges' entry point, and it currently documents a
-  one-plugin install with no demo.
+  one-plugin install with no demo. *(Ethan made this edit himself on
+  2026-07-27; committed as `57bff11`.)*
+- **2026-07-28 — Stage 5 (harness rehearsal).** Added two SDK pass-throughs —
+  `agent.plugins` (local plugin dirs) and `agent.skills` — and
+  `testing/evals/eval_demo.ts`, a four-turn playtester rehearsal with **no CLI
+  preamble in the system prompt**: everything the agent knows must arrive
+  through the shipped plugins. **19 of 20 gates pass**; the one red gate is a
+  true positive, not a flake (see BLOCKING above).
+  **Two harness lessons, both worth keeping.** (1) `plugins` and `skills` are
+  *separate* switches, and `tools` is an allowlist of built-in tools — so
+  `tools: ["Bash","Read"]` silently excluded `Skill` and made both shipped
+  skills unreachable. The plugins had loaded correctly all along (both `bin/`
+  dirs were on PATH, verified by probe; both skills appeared in the session
+  listing) — the agent just had no way to invoke them. Recorded in DESIGN.md
+  because it reads exactly like a broken plugin and is not one.
+  (2) **My own gates had a hole, and the failing run exposed it.** In the run
+  where skills were unreachable, the agent scanned the filesystem for papers,
+  found none, and answered the LHC question from training data — and my
+  provenance gates *passed*, because Claude names Giddings and Ord unprompted
+  when discussing this literature. Provenance-shaped text is not provenance.
+  The gate now requires the answer to trace to an actual `retrieve explore`
+  invocation, plus a separate check that the explore targeted the user's
+  hydrated copy rather than the plugin's own KB — a failure that would look
+  identical in the output while quietly undoing the whole hydrate design.
+  Generalizable: **an eval that greps the answer text can only ever confirm the
+  model's fluency; gate on the action that produced it.**

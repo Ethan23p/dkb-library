@@ -34,6 +34,8 @@ const scenario: ScenarioDefinition = {
     model: "claude-opus-4-8",               // in-loop model, configurable
     systemPrompt: "...",                    // how the agent is primed on the CLI (v0.2.1: no plugin, so preamble)
     tools: ["Bash", "Read"],                // default minimal
+    plugins: ["./", "./demo"],              // local plugin dirs; paths only, runtime owns the SDK shape
+    skills: ["dkb:dkb"],                    // or 'all'; REQUIRED to make a loaded plugin's skill reachable
     maxTurnsPerMessage: 25,                 // runaway brake per user turn
     maxBudgetUsd: 2.0,                      // runaway brake per scenario
   },
@@ -115,7 +117,15 @@ process.exit(result.pass ? 0 : 1);
   - `outputFormat: { type: 'json_schema', schema }` — for the LLM-judge grader:
     structured verdicts, `structured_output` on the result message, auto-retry on
     mismatch (`error_max_structured_output_retries`)
-  - `mcpServers`, `agents`, `skills`, `plugins` — available later for v0.2.2 plugin-interface evals
+  - `plugins`, `skills` — plumbed through as of `eval_demo` (2026-07-28). Two switches,
+    not one: `plugins` loads a local plugin directory (and puts its `bin/` on the Bash
+    tool's PATH — verified empirically, not documented by the SDK), while `skills` is
+    what actually lets the agent *invoke* the SKILL.md it ships. Loading a plugin
+    without enabling skills yields an agent that can see the commands but never
+    reaches the interface guide, which reads as a plugin failure and is not one.
+    Naming skills explicitly also keeps the developer's own installed skills out of a
+    run that is meant to simulate a fresh machine.
+  - `mcpServers`, `agents` — available later if an eval needs them
 - Auth: `CLAUDE_CODE_OAUTH_TOKEN` in env (from `claude setup-token`); repo `.env` has it;
   Bun auto-loads `.env`. Strip `ANTHROPIC_API_KEY` if present to avoid auth-path ambiguity.
 - Nested-session hygiene (harness may run from inside a Claude Code session): strip

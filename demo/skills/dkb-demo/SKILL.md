@@ -73,8 +73,11 @@ Both can exist side by side; they are separate directories.
 Explore with the `dkb` command, pointed at the hydrated copy:
 
 ```
-dkb --dir ./demo-lhc retrieve explore "their question"
+dkb retrieve explore "their question" --dir ./demo-lhc
 ```
+
+Flags go **after** the command. `dkb --dir ./demo-lhc retrieve …` exits 2 with
+`no command given` — the parser reads the first argument as the command name.
 
 Two things to say *before* the first one, so a silent pause does not read as a
 hang: every question reads **every source in full** — that is how the system

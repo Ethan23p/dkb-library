@@ -7,7 +7,8 @@
   "scripts": {
     "test": "bun test testing/tests",
     "eval:smoke": "bun run testing/evals/eval_smoke.ts",
-    "eval:ws": "bun run testing/evals/eval_walking_skeleton.ts"
+    "eval:ws": "bun run testing/evals/eval_walking_skeleton.ts",
+    "eval:demo": "bun run testing/evals/eval_demo.ts"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.3.214"

@@ -61,7 +61,9 @@ dkb <command> --help
 
 Useful global flags: `--dir <path>` targets a knowledge base outside the current
 directory, `--json` gives you one parseable JSON document instead of prose, and
-`--verbose` prints progress notes to stderr. Prefer `--json` when you are going
+`--verbose` prints progress notes to stderr. **Flags come after the command** —
+`dkb retrieve explore "…" --dir <path>`, not `dkb --dir <path> retrieve …`,
+which exits 2 with `no command given`. Prefer `--json` when you are going
 to read the result yourself, prose when you are showing it to the user.
 
 Every failure prints an `error:` line and a `next:` line. Follow the `next:`
