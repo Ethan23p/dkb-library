@@ -13,6 +13,21 @@ export interface ScenarioDefinition {
     systemPrompt?: string;
     /** Base toolset for the in-loop agent. Default: ['Bash', 'Read']. */
     tools?: string[];
+    /**
+     * Local plugin directories to load for the session, so an eval can test the
+     * shipped skills and commands rather than a prompt that stands in for them.
+     * Paths only — the runtime owns the SDK's config shape. Relative paths
+     * resolve against the eval process's cwd.
+     */
+    plugins?: string[];
+    /**
+     * Which skills the session may invoke — `'all'`, or names (`plugin:skill`
+     * for plugin-qualified ones). Enabling skills is what makes a loaded plugin
+     * reachable; without it the agent can see a plugin's bin/ on PATH but has
+     * no way to invoke its SKILL.md. Naming them explicitly also keeps whatever
+     * else is installed on the developer's machine out of the run.
+     */
+    skills?: string[] | "all";
     /** Runaway brake: max agentic turns (maps to SDK maxTurns for the whole session). */
     maxTurnsPerMessage?: number;
     /** Runaway brake: max spend for the whole scenario. */

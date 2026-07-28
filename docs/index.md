@@ -13,9 +13,9 @@
      ============================================================ -->
 
 - ## Overview
-  *My submission to the Future of Life Foundation's Epistack Competition.*  
+  *My submission to the Future of Life Foundation's Epistack Competition.*
 	- ### What does it do?
-	  A library for creating knowledge bases that are *durable, scalable, and intuitive*. Multiplying one's capacity to **ingest, retrieve, and synthesize data while preserving nuance**.  
+	  A library for creating knowledge bases that are *durable, scalable, and intuitive*. Multiplying one's capacity to **ingest, retrieve, and synthesize data while preserving nuance**.
 		- #### Preserves nuance by
 			- being source-data oriented (not generated artifacts) and
 			- deferring synthesis over source-data to the time and context of retrieval.
@@ -24,13 +24,13 @@
 			- maintaining a principle that generative content isn't source data or evidence,
 			- leveraging mechanisms with AI to optimize for the limited resource: *the user's attention*.
 	- ### Why is this significant?
-	  The significance is in the design and the guiding values/principles being embodied through the entire system, and they're the epistemological statement I would like to impress upon you.  
+	  The significance is in the design and the guiding values/principles being embodied through the entire system, and they're the epistemological statement I would like to impress upon you.
 		- The prototype (beta version) is available for your testing as a Claude plugin - installation instructions in the next section.
 		- I'll go into the 3 foundational principles, pulled from the specification.
 			- Source Data First
-				- >None of the generative content from this system qualifies as source data or evidence - inference this system does is grounded solely by first-hand source data. (inference, meaning: metadata formation, informational artifact generation, etc.)
+				- > None of the generative content from this system qualifies as source data or evidence - inference this system does is grounded solely by first-hand source data. (inference, meaning: metadata formation, informational artifact generation, etc.)
 				  >
-				  >**Source data at source fidelity is essential**; phrasing, tacit knowledge, metaphors - warts (or contradictions) and all.  
+				  > **Source data at source fidelity is essential**; phrasing, tacit knowledge, metaphors - warts (or contradictions) and all.
 					- How is this implemented?
 						- This codebase doesn't use generated artifacts as source data, though it does use generative mechanisms.
 						- When a query is run, it consists of:
@@ -42,22 +42,22 @@
 							- v0.2.2 will do agentic graph search over an EAV database to find relevant sources, and then more gracefully stuff them in context and run the query. Source data at that point will probably be hand-rolled, `.json` or `.yaml` files.
 							- Post-v0.2, graph search + explore agents is quite effective, with quite high capacity, resembling the "deep research" pattern employed by the big AI providers; ideally, future development will go into scaling even beyond that - which I'm certain is possible, through delegation, as long as the core guiding values aren't violated.
 			- Just in Time (JiT) Intelligence
-				- >**A fatal failure mode with modern AI is interpretations over interpretations.**
-				  > 
-				  >Inference this system does is deferred to the *time* and *context* of retrieval - ensuring that nuance is preserved, a modern model is used, and data is up-to-date.  
+				- > **A fatal failure mode with modern AI is interpretations over interpretations.**
+				  >
+				  > Inference this system does is deferred to the *time* and *context* of retrieval - ensuring that nuance is preserved, a modern model is used, and data is up-to-date.
 				- How is this implemented?
 					- This codebase doesn't use generated artifacts as source data, though it does use generative mechanisms.
 						- Therefore, the trick is to not try and employ the agentic capabilities *too early* in the process and, instead, to build architecture around the agentic capabilities such that they are highly leveraged but not in a way that feeds back into the source data or are exposed to the known issues of contemporary AI.
 						- This is demonstrated by the *lack* of architecture around AI technologies - much more emphasis is placed on the pieces moving around it, like ingesting, storing, processing source data.
 							- Thus, this system isn't intended to "solve debate" as much as it's supposed to supplement agents *greater than or equal to* humans, in reasoning.
 			- AI as an Interface for Hard Data
-				- >The Interface Agents are first-class citizens - this system is technically useable by a human at a terminal but will never be used that way.
+				- > The Interface Agents are first-class citizens - this system is technically useable by a human at a terminal but will never be used that way.
 				  >
-				  >**This system leverages AI Agents both as machinery and as interfaces, both irreducible**.
+				  > **This system leverages AI Agents both as machinery and as interfaces, both irreducible**.
 				  >
-				  >Machinery: processing data, interpreting between sources, on-demand synthesis;
+				  > Machinery: processing data, interpreting between sources, on-demand synthesis;
 				  >
-				  >Interfaces: interpolating across jagged boundaries for humans, using a deterministic CLI to perform complex operations with *high trust*.  
+				  > Interfaces: interpolating across jagged boundaries for humans, using a deterministic CLI to perform complex operations with *high trust*.
 				- How is this implemented?
 					- Agents are machinery in that they are utilized for the operations which are not cheap or impossible through traditional software - like doing reasoned search over source data at the level of a college student; synthesizing information in limited, constrained contexts; and such operations.
 					- *reasoned search over source data*
@@ -69,7 +69,10 @@
 						- Which is exactly the pattern that DKB will utilize. The idea is straightforward:
 							- Do agentic search over the most relevant source data.
 								- How much of the relevant source data?
+									- Assuming a model of 2026 with over 1 million tokens of potential context, reserving some for the response which is to come, that leaves somewhere around 990k tokens.
 								- What's relevant?
+									- semantic relevance: consistent, strong, mid-accuracy signal (e.g. "include source data with relevance above [x]%)
+									- relational relevance: not entirely consistent, potentially strong, high-accuracy signal (e.g. "include source data in line with [x] consideration")
 					- Agents are interfaces
 						- AI Agents are *wonderful* at interpreting the messy, inconsistent input of humans into discrete outcomes, such as tool calls;
 						- Therefore, place an agent in between the user and the, at times, technical & precise interface to handle the translation.
@@ -78,26 +81,29 @@
 			- I emphasize durable and regression-resistant because a DKB is a piece of knowledge-utility which appreciates in value over time - I would say this is a property incompatible with solely human-maintained utilities *except in the case of largescale crowd-sourcing* like Wikis, and even for those, just barely.
 			- Being able to organize, manipulate, reason over large amounts of data is a force multiplier which wasn't realistic to harness before contemporary AI.
 	- ### See a DKB in action. (early stage, beta version)
-	  Showcase, from the Repo: `github.com/Ethan23p/dkb-library/tree/main/docs/showcase`  
+	  Showcase, from the Repo: `github.com/Ethan23p/dkb-library/tree/main/docs/showcase`
 		- In the showcase, Claude walks you through a few actual instances of the application being used, pulled from the extensive testing which is central in my workflow. This demonstration is very early stage (these are literally some of the first end-to-end simulations we ran), but they demonstrate the values in the way the system reacts to and supplements the User, based on their queries.
 		- #### Plain, Boring Tensions in the Sources
-		  Case \#1  
+		  Case #1
 			- Provided a binary question, Claude (using this tooling) explains the tensions expressed in the different sources within the Knowledge Base; this demonstrates the system distinctly *not* automating the Epistemology, instead enabling the User to make that judgement.
 		- #### Preventing Hallucination & Preserving Integrity, by Design
-		  Case \#2  
+		  Case #2
 			- By providing all of the data that the agent needs to assess a situation, by setting expectations, by framing the interaction properly: showing *Epistemic humility* can be on offer as the path of least resistance and the Agent will reliably take it.
 	- ### Try it as a Claude Plugin. (early stage, beta version)
 		- Installation: `https://github.com/Ethan23p/dkb-library/blob/main/docs/PLAYTESTING.md`
-		- In Claude Code, run these 3 commands, in sequence:
-		  
-		  >/plugin marketplace add Ethan23p/dkb-library
-		  
-		  >/plugin install dkb@ethan-dkb
-		  
-		  >/reload-plugins  
-		- Once it's installed, the intension is that Claude will straightforwardly figure out the tool and guide you through all operations, seamlessly. Further instruction in the `PLAYTESTING.md`, linked above.
+		- In Claude Code, run these 4 commands, in sequence:
+		  ```
+		  /plugin marketplace add Ethan23p/dkb-library
+		  /plugin install dkb@ethan-dkb
+		  /plugin install dkb-demo@ethan-dkb
+		  /reload-plugins
+		  ```
+		- The second install is two pre-built Durable Knowledge Bases - you can talk with Claude to get them established, then do some 'explore' queries.
+			- The first DKB has sources about the theoretical safety of the Large Hadron Collider.
+			- The second DKB is a wild-card - it contains a handful of sources detailing an interesting historical dynamic pertaining to the early days of computer tech, when they were being introduced to typical, hourly workers.
+		- Once it's installed, the intention is that Claude will straightforwardly figure out the tool and guide you through all operations, seamlessly. You can actually just jump in, but, for the discerning user, there's further instruction in the `PLAYTESTING.md`, linked above.
 	- ### Who am I?
-	  My name's Ethan, I'm an independent software developer and writer currently based in Phoenix, AZ.  
+	  My name's Ethan, I'm an independent software developer and writer currently based in Phoenix, AZ.
 		- I'm a rationalist (of the Astral Codex Ten camp), and I'm obsessive about design, AI, computer science, user experience, game design.
 		- Note: for this write-up and other such writing, I do the physical writing 100% myself; the ideation is largely alone, with exploration and brainstorming with AI as is productive and/or less tedious. For writing within the repo - including documentation, commit messages, and such - I typically have that generated by an AI Assistant based on a tight specification.
 			- *And I use dashes grammatically, in a style of my own - which is unrelated to the dash/emdash usage of modern AI.*
@@ -115,7 +121,7 @@
 			- Creative endeavors are a good example because the following is *trivially true* of them, today: each individual person has strictly, only mental accounting of their various **non-obligatory** endeavors. Individuals who are highly creative & technical are presumed to be juggling these endeavors *indefinitely*.
 - ## Methodology
 	- ### Ingestion
-	  How does this system handle ingestion?  
+	  How does this system handle ingestion?
 		- Users within a team choose source data meticulously and then pass them into the system with low-friction; ingestion is where the quality ceiling of the Knowledge Base is set, and it is when **identity** is forged. After ingestion, the goal is that not a single datum is lost to ingestion, retrieval, synthesis or otherwise.
 		- The DKB methodology focuses heavily on ingestion, even to the extent that it reaches through the other layers to hopefully resolve some of those tensions pre-emptively. Where it doesn't automate reasoning, it does expose the underlying mechanisms.
 			- What qualifies as source data?
@@ -126,7 +132,7 @@
 				- A secondary mechanism for scaling the useability of the vast amount of knowledge would be intelligently derived informational artifacts - for when the system needs to maintain the spirit of "first-hand source data" but scales beyond current capabilities for search & retrieval.
 				- These serve to relieve/harness some of the attrition of constantly searching, updating, and maintaining the knowledge-base; this mechanism is comparable to portal pages, disambiguation pages found in Wikipedia.
 	- ### Structure
-	  How does this system handle inference, discourse?  
+	  How does this system handle inference, discourse?
 		- Regarding inference, genealogy is intentionally ephemeral, transparent, per-artifact. Using the DKB should enable a rich, nuanced comprehension of the underlying sources, arguments, positions; though, it intentionally doesn't automate that process.
 		- The DKB methodology doesn't directly address discourse - competing claims, sources, "the same points argued ad infinitum" - but it does expose them at time of retrieval.
 		- *retrieval*
@@ -136,10 +142,10 @@
 		- *synthesis*
 			- When synthesis by AI is used, the methodology places the AI in a position of utility and intelligence as opposed to one which is opinionated  or makes less harsh the underlying mechanics.
 	- ### Assessment
-	  How does this system handle assessment?  
+	  How does this system handle assessment?
 		- Largely unaddressed in this system, deliberately; assessment represents a seam where you might have the work handled by human researchers, cutting-edge AI researchers, or another tool entirely.
-		- Judgement is concentrated at two points: 
-		  **what source data gets added** and **literal interpretation, utility at query time**. This is intentionally to reduce unnecessary load on the operator and optimize for their attention being spent on the important bits of research.  
+		- Judgement is concentrated at two points:
+		  **what source data gets added** and **literal interpretation, utility at query time**. This is intentionally to reduce unnecessary load on the operator and optimize for their attention being spent on the important bits of research.
 		- The Knowledge Base avoids declaring a verdict, a credence, or ranking.
 	- ### Guiding Values & Principles
 		- #### Concept
@@ -167,7 +173,7 @@
 			- Observable
 			- Test & Evaluation Driven Development
 	- ### User Experience Flows
-	  *This content is quite raw, but it's really the best way to get a feel for the system.*  
+	  *This content is quite raw, but it's really the best way to get a feel for the system.*
 		- routine fresh initialization
 			- **User:**
 				- "Hey Claude! Today we're getting started on a project involving the library, 'Durable Knowledge Base', you should have access to some skills?"

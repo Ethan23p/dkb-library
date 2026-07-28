@@ -13,7 +13,11 @@ export const REPO_ROOT = path.resolve(import.meta.dir, "..", "..");
 export const CLI_ENTRY =
   process.env.DKB_CLI_ENTRY ?? path.join(REPO_ROOT, "engines", "epistack", "main.ts");
 
+/** The two canonical fixture corpora. Deliberately unrelated to each other —
+ *  which is what lets a test pair a source from one with a query about the
+ *  other and expect zero coverage. */
 export const CORPUS_LHC = path.join(REPO_ROOT, "testing", "fixtures", "corpus-lhc");
+export const CORPUS = path.join(REPO_ROOT, "testing", "fixtures", "corpus");
 
 export interface CliResult {
   stdout: string;
@@ -25,15 +29,21 @@ export interface CliResult {
  * Run the CLI as a subprocess. Red-first guard: if the entry point doesn't exist
  * yet, fail loudly with the reason — that is the correct day-one red.
  */
-export function runCli(args: string[], opts: { cwd: string }): CliResult {
+export function runCli(
+  args: string[],
+  opts: { cwd: string; env?: Record<string, string | undefined> },
+): CliResult {
   if (!existsSync(CLI_ENTRY)) {
     throw new Error(
       `engine entry point not found: ${CLI_ENTRY} — check DKB_CLI_ENTRY, or that the repo is complete (CONTRACTS D1)`,
     );
   }
+  // `env` entries override the inherited environment; an explicit `undefined`
+  // unsets a variable, which is how the auth tests simulate a machine that has
+  // no credential without disturbing the repo's own .env.
   const proc = Bun.spawnSync(["bun", CLI_ENTRY, ...args], {
     cwd: opts.cwd,
-    env: { ...process.env },
+    env: { ...process.env, ...(opts.env ?? {}) },
     stdout: "pipe",
     stderr: "pipe",
   });
@@ -84,24 +94,27 @@ export function snapshotTree(root: string, exclude: string[] = []): string[] {
 }
 
 /** Copy one corpus fixture (md + import sidecar) into a sandbox; returns import-json path. */
-export function stageFixture(slug: string, sandboxDir: string): string {
-  cpSync(path.join(CORPUS_LHC, `${slug}.md`), path.join(sandboxDir, `${slug}.md`));
+export function stageFixture(slug: string, sandboxDir: string, corpus = CORPUS_LHC): string {
+  cpSync(path.join(corpus, `${slug}.md`), path.join(sandboxDir, `${slug}.md`));
   cpSync(
-    path.join(CORPUS_LHC, `${slug}.import.json`),
+    path.join(corpus, `${slug}.import.json`),
     path.join(sandboxDir, `${slug}.import.json`),
   );
   return path.join(sandboxDir, `${slug}.import.json`);
 }
 
 /** Read a staged fixture's metadata (title/author/origin) from its import sidecar. */
-export async function fixtureMeta(slug: string): Promise<{
+export async function fixtureMeta(
+  slug: string,
+  corpus = CORPUS_LHC,
+): Promise<{
   title: string;
   author: string;
   origin: string;
   contentPath: string;
 }> {
   const sidecar = JSON.parse(
-    await Bun.file(path.join(CORPUS_LHC, `${slug}.import.json`)).text(),
+    await Bun.file(path.join(corpus, `${slug}.import.json`)).text(),
   );
   return { ...sidecar.metadata, contentPath: sidecar.content_path };
 }

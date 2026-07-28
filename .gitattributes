@@ -1,1 +1,4 @@
 * text=auto eol=lf
+
+# Prebuilt demo knowledge bases: SQLite binaries, never line-ending normalized.
+*.sqlite binary

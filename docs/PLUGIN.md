@@ -31,6 +31,36 @@ The pieces this repo uses:
 Components Claude Code also looks for but this plugin does not ship: `agents/`,
 `hooks/hooks.json`, `.mcp.json`, `.lsp.json`, `commands/`, `output-styles/`.
 
+## Two plugins, one marketplace
+
+The repo publishes two entries from a single `marketplace.json`:
+
+| Entry | `source` | What it carries |
+|---|---|---|
+| `dkb` | `./` | The library, the engine, `bin/dkb`, and the interface skill. |
+| `dkb-demo` | `./demo` | Two prebuilt knowledge bases, `bin/dkb-demo`, and a playtest skill. |
+
+A marketplace entry's `source` may be a subdirectory, so `demo/` is a complete
+plugin root in its own right — its own `.claude-plugin/plugin.json`, `bin/`, and
+`skills/` — nested inside the root plugin's tree. One `/plugin marketplace add`,
+two independent installs.
+
+Worth naming honestly: because the root plugin's `source` is `"./"`, installing
+`dkb` alone already puts the demo's bytes on disk. The second entry buys
+*presentation and explicit opt-in*, not withheld data — the demo's skill and
+`dkb-demo` command only activate when someone chooses to install it.
+
+### Why the demo hydrates instead of running in place
+
+The demo ships knowledge bases inside a plugin root, and a knowledge base is
+something the user writes to. Those two facts are in tension, and the
+ephemerality rule below settles it: `dkb-demo use <name>` **copies** a knowledge
+base into a directory the user owns, and everything afterwards happens there.
+
+Operating on the copy in the plugin root would appear to work, right up until
+the next `/plugin update` deleted the user's additions along with the old
+version. Any future plugin that ships seed data should do the same thing.
+
 Note that a `CLAUDE.md` at the plugin root is *not* loaded as context for the
 installing user. Instructions reach Claude through skills, agents, and hooks —
 which is why the interface guide is a SKILL.md and not prose in a readme.
@@ -56,13 +86,14 @@ marketplace, which is what makes a two-command install from GitHub possible:
 ```
 /plugin marketplace add Ethan23p/dkb-library
 /plugin install dkb@ethan-dkb
+/plugin install dkb-demo@ethan-dkb
 /reload-plugins
 ```
 
-`ethan-dkb` is the `name` in `marketplace.json`; `dkb` is the plugin entry's
-`name`. Both are public-facing and appear in the install command, so renaming
-either breaks existing installs — change `displayName` instead when you only
-want a different label.
+`ethan-dkb` is the `name` in `marketplace.json`; `dkb` and `dkb-demo` are the
+plugin entries' `name`s. All three are public-facing and appear in the install
+commands, so renaming any of them breaks existing installs — change
+`displayName` instead when you only want a different label.
 
 Users pick up later changes with `/plugin marketplace update`. Because
 `plugin.json` sets an explicit `version`, `/plugin update` only offers an update
