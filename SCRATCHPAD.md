@@ -423,6 +423,11 @@ existing suite is green and this is not.
 
 ### Finding 1 — retrieval is broken for every playtester (blocking)
 
+> **Full write-up: [`AUTH-FINDING.md`](AUTH-FINDING.md)** — prior assumptions,
+> what was actually observed, what "point at `~/.claude`" means mechanically,
+> four options, and the open questions for a research pass. Read that, not this
+> summary, before acting.
+
 **A judge who installs the plugins and asks a question gets exit 8.** Verified
 end to end, not inferred: hydrated `saber` into a directory with no `.env`, ran
 the documented command, got
